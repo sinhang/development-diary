@@ -36,6 +36,10 @@ cd /home/<username>/ComfyUI
 python main.py
 ```
 
+· 访问 `http://localhost:8188` 可看见以下页面
+
+![ComfyUI](../../static/images/ComfyUI/ComfyUI.index.Screenshot.png)
+
 ### 查看 ComfyUI 启动参数
 1. 进入 `ComfyUI` 目录
 2. 运行 `python main.py --help`
