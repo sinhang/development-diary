@@ -2,6 +2,7 @@
 1. 进入 [ComfyUI](https://github.com/comfyanonymous/ComfyUI) 仓库
 2. 点击 `Code` 按钮，选择 `Download ZIP` 或者 `Code` 按钮下方的 `Clone` 按钮，选择 `HTTPS` 或 `SSH`
 3. 解压下载的 ZIP 文件 或者 clone
+4. 设置 Python 环境 [pyenv](../pyenv/INSTALL.md)
 
 ```shell
 cd /home/<username>/ComfyUI
