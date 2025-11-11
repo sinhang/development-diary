@@ -1,3 +1,7 @@
+### ComfyUI 站点
+1. [ComfyUI官网](https://www.comfy.org/zh-cn/)
+2. [ComfyUI文档](https://docs.comfy.org/zh-CN)
+
 ### 安装 ComfyUI
 1. 进入 [ComfyUI](https://github.com/comfyanonymous/ComfyUI) 仓库
 2. 点击 `Code` 按钮，选择 `Download ZIP` 或者 `Code` 按钮下方的 `Clone` 按钮，选择 `HTTPS` 或 `SSH`

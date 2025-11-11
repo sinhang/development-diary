@@ -1,3 +1,6 @@
+### pyenv github 仓库
+1. [pyenv](https://github.com/pyenv/pyenv)
+
 ### 安装 pyenv
 
 ```shell
