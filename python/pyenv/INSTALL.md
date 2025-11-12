@@ -28,3 +28,15 @@ pyenv global 3.12.7
 ```shell
 pyenv local 3.12.7
 ```
+
+### pyenv command
+```shell
+# 移除指定Python版本
+pyenv uninstall 3.12.7
+
+# 列出所有已Python版本
+pyenv versions
+
+# 列出所有可以安装的版本
+pyenv install --list
+```
