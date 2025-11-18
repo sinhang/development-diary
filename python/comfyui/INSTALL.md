@@ -7,13 +7,19 @@
 2. 点击 `Code` 按钮，选择 `Download ZIP` 或者 `Code` 按钮下方的 `Clone` 按钮，选择 `HTTPS` 或 `SSH`
 3. 解压下载的 ZIP 文件 或者 clone
 4. 设置 Python 环境 [pyenv](../pyenv/INSTALL.md)
+5. 安装 torch
 
 ```shell
-cd /home/<username>/ComfyUI
+cd /home/<username>
 git clone https://github.com/comfyanonymous/ComfyUI.git
 pyenv local <python_version>
 python -m venv .venv
 source venv/bin/activate
+
+# 安装 torch
+pip install torch==2.9.1+cu130 torchvision==0.24.1+cu130 torchaudio==2.9.1+cu130 --index-url https://download.pytorch.org/whl/cu130 onnxruntime-gpu xformers
+
+# 安装依赖
 pip install -r requirements.txt
 ```
 
@@ -28,6 +34,7 @@ pip install -r requirements.txt
 ```shell
 cd /home/<username>/ComfyUI/custom_nodes
 git clone https://github.com/Comfy-Org/ComfyUI-Manager.git
+# 安装依赖
 pip install -r requirements.txt
 ```
 
