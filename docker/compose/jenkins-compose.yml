@@ -1,6 +1,6 @@
 services:
   jenkins:
-    image: jenkins/jenkins:lts-jdk11  # 建议使用更新的JDK版本
+    image: jenkins/jenkins:lts-jdk17  # 建议使用更新的JDK版本
     container_name: jenkins
     ports:
       - "8089:8080"
