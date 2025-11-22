@@ -1,6 +1,6 @@
-### INSTALL JINKENS
+### INSTALL jenkins
 
-1. [jinkens官网](https://jinkens.io/)
+1. [jenkins官网](https://jenkins.io/)
 2. [docker compose](../docker/compose/jenkins-compose.yml)
 
 ### 查看默认密码
