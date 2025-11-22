@@ -148,3 +148,11 @@ python main.py --help
 - `--enable-compress-response-body`: 启用压缩响应体。
 - `--comfy-api-base`: `COMFY_API_BASE` 设置 ComfyUI API 的基本 URL。（默认值：https://api.comfy.org）
 - `--database-url`: `DATABASE_URL` 指定数据库 URL，例如，对于内存数据库，可以使用 'sqlite:///:memory:'。
+
+
+### 启动
+```bash
+python main.py --listen 0.0.0.0 --port 8188 --cuda-device 0
+```
+
+[http://127.0.0.1:8188](http://127.0.0.1:8188)

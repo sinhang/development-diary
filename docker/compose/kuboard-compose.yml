@@ -1,0 +1,19 @@
+# # sudo docker compose -f ./kuboard-compose.yml up
+services:
+  kuboard:
+    restart: unless-stopped
+    image: "swr.cn-east-2.myhuaweicloud.com/kuboard/kuboard:v3"
+    container_name: kuboard
+    ports:
+      - "8088:80"
+    environment:
+      - TZ=Asia/Shanghai
+      - DB_DRIVER=com.mysql.cj.jdbc.Driver
+      - DB_URL=jdbc:mysql://192.168.1.27:3306/kuboard?serverTimezone=Asia/Shanghai
+      - DB_USERNAME=root
+      - DB_PASSWORD=LHPeXJZ7JqvLiQTC
+    volumes:
+      - /etc/localtime:/etc/localtime:ro  # 时间同步
+      - ./kuboard/data:/data  # 可选：持久化数据
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true

@@ -1,0 +1,18 @@
+# sudo docker compose -f ./mysql-compose.yml up -d
+services:
+  mysql:
+    restart: unless-stopped
+    container_name: mysql
+    image: "mysql:8.0.44"
+    environment:
+      - MYSQL_ROOT_PASSWORD=LHPeXJZ7JqvLiQTC
+    ports:
+      - "3306:3306"
+    command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/logs:/var/log/mysql
+      - ./mysql/conf/my.cnf:/etc/mysql/my.cnf
+
+# sudo chown -R 999:999 ./mysql/data ./mysql/logs
+# sudo chmod -R 777 ./mysql/data ./mysql/logs

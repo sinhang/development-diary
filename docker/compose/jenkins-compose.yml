@@ -1,0 +1,17 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk11  # 建议使用更新的JDK版本
+    container_name: jenkins
+    ports:
+      - "8089:8080"
+      - "50000:50000"
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+      - /etc/timezone:/etc/timezone:ro  # 同步时区
+      - /etc/localtime:/etc/localtime:ro
+    # environment:
+      # - JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Duser.timezone=Asia/Shanghai
+    user: "1000:1000"
+    restart: unless-stopped  # 自动重启
