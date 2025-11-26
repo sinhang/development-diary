@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+    options {
+        timeout(time: 1, unit: 'HOURS')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+    environment {
+        APP_NAME = "my-application"
+        VERSION = "1.0.0"
+        DOCKER_REGISTRY = "registry.example.com"
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Pull') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+        stage('Sonarqube') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+        stage('Build Docker') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'mvn deploy'
+            }
+        }
+    }
+    post {
+        always {
+            emailext (
+                subject: "构建通知: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "构建状态: ${currentBuild.result ?: 'SUCCESS'}",
+                to: "team@example.com"
+            )
+        }
+        success {
+            slackSend channel: '#builds', message: "构建成功: ${env.BUILD_URL}"
+        }
+        failure {
+            slackSend channel: '#builds', message: "构建失败: ${env.BUILD_URL}"
+        }
+    }
+}
