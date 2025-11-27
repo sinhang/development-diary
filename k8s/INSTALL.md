@@ -146,7 +146,7 @@ sudo crictl ps | grep calico-node
 sudo crictl logs <calico-node-container-id>
 ```
 
-### docker 导出镜像并转 cri 镜像，cri 导入镜像
+### 外部镜像拉取失败 docker 导出镜像并转 cri 镜像，cri 导入镜像
 ###### 如果 cri 网络插件无法正常启动且是因为无法拉取镜像则尝试如下操作 - master及worker节点都需要做
 ```bash
 # 导出镜像
