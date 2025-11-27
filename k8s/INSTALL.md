@@ -181,3 +181,27 @@ kubectl describe pod -n kube-system calico-node-2qk7m
 # 进入 pods
 kubectl exec -it ad-service-6479d6c87c-rkmm9 -n fengqi -- /bin/bash
 ```
+
+
+### 拉取内部镜像失败
+```bash
+# Failed to pull image "192.168.1.27:8090/dev/config-service:latest": failed to pull and unpack image "192.168.1.27:8090/dev/config-service:latest": failed to resolve reference "192.168.1.27:8090/dev/config-service:latest": failed to do request: Head "https://192.168.1.27:8090/v2/dev/config-service/manifests/latest": http: server gave HTTP response to HTTPS client
+
+sudo vi sudo vi /etc/containerd/config.toml
+# 找到 
+#[plugins."io.containerd.grpc.v1.cri".image_decryption]
+#  key_model = "node"
+# 在下面添加
+    [plugins."io.containerd.grpc.v1.cri".registry]
+      config_path = ""
+
+      [plugins."io.containerd.grpc.v1.cri".registry.auths]
+
+      [plugins."io.containerd.grpc.v1.cri".registry.configs]
+
+      [plugins."io.containerd.grpc.v1.cri".registry.headers]
+
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."192.168.1.27:8090"]
+          endpoint = ["http://192.168.1.27:8090"]
+```
