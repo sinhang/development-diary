@@ -61,6 +61,17 @@ kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 # kubectl get pods -n kube-system | grep metrics-server | grep Running | awk '{print}' | xargs kubectl delete pod -n kube-system
 ```
 
+### pod错误排查
+```bash
+# 查看 kube-system 命名空间 pod 状态，所有都在 running 那么恭喜，集群搭建成功
+kubectl get pods -n kube-system -o wide
+# 如果有错误的 pod 则往下看
+# 查看 pods 详情 calico-node-2qk7m 为 pod 名称
+kubectl describe pod -n kube-system calico-node-2qk7m
+
+# 如果是拉取容器失败，则使用国内镜像进行拉取，拉取后再导出且导入 cri
+```
+
 ### 查看 kubelet 日志
 ```bash
 sudo journalctl -u kubelet -n 20 --no-pager
@@ -101,4 +112,72 @@ sudo journalctl -u containerd -n 20 --no-pager
 sudo kubeadm reset
 sudo rm -rf /etc/kubernetes/
 sudo rm -rf $HOME/.kube
+```
+
+
+### 下载并且打标签
+```bash
+# 从国内源手动拉取镜像
+docker pull registry.cn-hangzhou.aliyuncs.com/calico/cni:v3.25.0
+
+# 重新打标签
+docker tag registry.cn-hangzhou.aliyuncs.com/calico/cni:v3.25.0 docker.io/calico/cni:v3.25.0
+
+# 重启 kubelet
+sudo systemctl restart kubelet
+```
+
+### 查看pod详情
+```bash
+# kubectl describe pod calico-kube-controllers-7498b9bb4c-nf8cq -n kube-system
+kubectl describe pod <pod-name> -n <namespace>
+kubectl describe pod kube-apiserver-k8s-master -n kube-system
+kubectl describe pod kube-apiserver-k8s-master -n kube-system | grep -i error
+kubectl describe pod kube-apiserver-k8s-master -n kube-system | grep -i error | grep -i "cannot"
+kubectl describe pod kube-apiserver-k8s-master -n kube-system | grep -i error | grep -i "cannot" | awk '{print $2}' | xargs kubectl delete pod -n kube-system
+```
+
+### 查看容器信息
+```bash
+# 获取 calico-node 容器 ID
+sudo crictl ps | grep calico-node
+
+# 查看 calico-node 容器日志（替换为实际的容器ID）
+sudo crictl logs <calico-node-container-id>
+```
+
+### docker 导出镜像并转 cri 镜像，cri 导入镜像
+###### 如果 cri 网络插件无法正常启动且是因为无法拉取镜像则尝试如下操作 - master及worker节点都需要做
+```bash
+# 导出镜像
+docker save -o calico-cni-v3.25.0.tar calico/cni:v3.25.0
+docker save -o calico-node-v3.25.0.tar calico/node:v3.25.0
+docker save -o calico-kube-controllers-v3.25.0.tar calico/kube-controllers:v3.25.0
+
+# 转 cri 且导入镜像
+sudo ctr -n=k8s.io images import calico-cni-v3.25.0.tar
+sudo ctr -n=k8s.io images import calico-node-v3.25.0.tar
+sudo ctr -n=k8s.io images import calico-kube-controllers-v3.25.0.tar
+
+# 简化命令
+docker save calico/cni:v3.25.0 | sudo ctr -n=k8s.io images import -
+```
+
+### crictl 获取容器信息
+```bash
+sudo crictl ps -a
+sudo crictl logs 6b8b8f30c2cad
+sudo crictl images | grep calico
+sudo crictl images | grep calico | awk '{print}' | xargs sudo crictl rmi
+```
+
+### kubectl 指令
+```bash
+# 获取 命名空间为 kube-system 的 pods
+kubectl get pods -n kube-system -o wide
+kubectl get pods -n kube-system -o wide | grep calico | awk '{print}' | xargs kubectl delete pod -n kube-system
+# 查看 pods 详情
+kubectl describe pod -n kube-system calico-node-2qk7m
+# 进入 pods
+kubectl exec -it ad-service-6479d6c87c-rkmm9 -n fengqi -- /bin/bash
 ```
