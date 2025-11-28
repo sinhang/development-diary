@@ -1,0 +1,89 @@
+# 全局配置
+global:
+  scrape_interval: 15s # 默认抓取目标的间隔时间
+  evaluation_interval: 15s # 执行规则的频率，主要是告警规则
+
+  # 外部系统标签（可选，在所有时间序列和告警/外部通信时添加这些标签）
+  external_labels:
+    monitor: 'fengqi-dev'
+    environment: 'dev'
+
+# 告警配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093 # 如果使用 Alertmanager，请取消注释并配置地址
+
+# 规则文件列表
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+  # 加载所有以 .rules.yml 结尾的文件
+  - "*.rules.yml"
+
+# 抓取配置列表
+scrape_configs:
+  # 第一个作业：监控 Prometheus 自身
+  - job_name: 'prometheus'
+
+    # 覆盖全局的 scrape_interval
+    scrape_interval: 10s
+
+    # 覆盖全局的 scrape_timeout (默认为 scrape_interval)
+    scrape_timeout: 5s
+
+    # 指标路径，默认为 /metrics
+    metrics_path: /metrics
+
+    # HTTP 方案，默认为 http，也可以是 https
+    scheme: http
+
+    # 静态目标配置：直接指定目标列表
+    static_configs:
+      - targets: ['192.168.1.27:8091']
+        labels:
+          group: 'prometheus-servers'
+          datacenter: 'dc1'
+
+  # 第二个作业：监控 Node Exporter (监控 Linux 主机)
+  - job_name: 'node-exporter'
+
+    # 使用文件服务发现，从文件中动态加载目标
+    file_sd_configs:
+      - files:
+          - '/etc/prometheus/targets/node-exporters*.yaml' # 可以指定通配符
+        refresh_interval: 5m # 每5分钟重新读取文件
+
+    # 重新标记配置
+    relabel_configs:
+      # 示例1：只抓取带有 'job=node-exporter' 标签的目标（来自文件发现）
+      - source_labels: [__meta_kubernetes_pod_label_job]
+        regex: node-exporter
+        action: keep
+
+      # 示例2：从地址中提取信息作为标签（例如从 __address__ 中提取主机名）
+      - source_labels: [__address__]
+        regex: '([^:]+)(?::\d+)?'
+        target_label: 'instance'
+        replacement: '${1}'
+
+  # 通过 Nacos 服务发现
+  - job_name: 'nacos-services'
+
+    http_sd_configs:
+      - url: 'http://192.168.1.18:8848/nacos/v1/ns/instance/list?serviceName=&groupName=DEFAULT_GROUP&namespaceId=public'
+        refresh_interval: 1m
+
+        # 可选：如果 Nacos 需要认证
+        basic_auth:
+          username: 'nacos'
+          password: 'nacos'
+
+    relabel_configs:
+      - source_labels: [__meta_nacos_service_name]
+        target_label: service_name
+      - source_labels: [__meta_nacos_ip]
+        target_label: instance
+      - source_labels: [__meta_nacos_port]
+        target_label: port
