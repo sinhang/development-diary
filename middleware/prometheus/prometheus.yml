@@ -45,6 +45,26 @@ scrape_configs:
         labels:
           group: 'prometheus-servers'
           datacenter: 'dc1'
+  - job_name: 'nacos'
+
+    # 覆盖全局的 scrape_interval
+    scrape_interval: 10s
+
+    # 覆盖全局的 scrape_timeout (默认为 scrape_interval)
+    scrape_timeout: 5s
+
+    # 指标路径，默认为 /metrics
+    metrics_path: /nacos/actuator/prometheus
+
+    # HTTP 方案，默认为 http，也可以是 https
+    scheme: http
+
+    # 静态目标配置：直接指定目标列表
+    static_configs:
+      - targets: ['192.168.1.28:8848', '192.168.1.18:8848']
+        labels:
+          group: 'nacos-servers'
+          datacenter: 'nc28'
 
   # 第二个作业：监控 Node Exporter (监控 Linux 主机)
   - job_name: 'node-exporter'
@@ -68,22 +88,11 @@ scrape_configs:
         target_label: 'instance'
         replacement: '${1}'
 
-  # 通过 Nacos 服务发现
-  - job_name: 'nacos-services'
-
-    http_sd_configs:
-      - url: 'http://192.168.1.18:8848/nacos/v1/ns/instance/list?serviceName=&groupName=DEFAULT_GROUP&namespaceId=public'
-        refresh_interval: 1m
-
-        # 可选：如果 Nacos 需要认证
-        basic_auth:
-          username: 'nacos'
-          password: 'nacos'
-
+  - job_name: 'nacos-discorvery'
+    file_sd_configs:
+    - files:
+      - /etc/prometheus/nacos_sd_dev.json
+      refresh_interval: 1m
     relabel_configs:
-      - source_labels: [__meta_nacos_service_name]
-        target_label: service_name
-      - source_labels: [__meta_nacos_ip]
-        target_label: instance
-      - source_labels: [__meta_nacos_port]
-        target_label: port
+    - regex: 'preserved_register_source'
+      action: labeldrop
