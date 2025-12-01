@@ -26,6 +26,9 @@ data:
         pipeline_stages:
           - sampling:
               rate: 0.1  # 只采集10%的日志
+          - drop:
+              source: filename
+              regex: ".*\\.log\\.[0-9]+$"  # 排除轮转日志文件
       - job_name: pods
         kubernetes_sd_configs:
           - role: pod
@@ -47,10 +50,147 @@ data:
             source_labels: [__meta_kubernetes_container_name]
             target_label: container
           - action: replace
-            replacement: /var/log/pods/*$1/*.log
+            replacement: /var/log/pods/$1/$2/*.log
             target_label: __path__
             source_labels:
               - __meta_kubernetes_pod_uid
+              - __meta_kubernetes_container_name
+      - job_name: fengqi-dev-service-logs
+        kubernetes_sd_configs:
+          - role: pod
+        pipeline_stages:
+          - docker: {}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: fengqi-dev
+            action: keep
+          - action: replace
+            source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - replacement: dev
+            target_label: environment
+          - action: replace
+            source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            regex: .*-service$
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: node
+          - action: replace
+            source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          - action: replace
+            source_labels: [__meta_kubernetes_container_name]
+            target_label: container
+          - action: replace
+            replacement: /var/log/containers/$1_$2_$3-*.log
+            target_label: __path__
+            source_labels:
+              - __meta_kubernetes_pod_name
+              - __meta_kubernetes_namespace
+              - __meta_kubernetes_container_name
+      - job_name: fengqi-test-service-logs
+        kubernetes_sd_configs:
+          - role: pod
+        pipeline_stages:
+          - docker: {}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: fengqi-test
+            action: keep
+          - action: replace
+            source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - action: replace
+            source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - replacement: test
+            target_label: environment
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            regex: .*-service$
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: node
+          - action: replace
+            source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          - action: replace
+            source_labels: [__meta_kubernetes_container_name]
+            target_label: container
+          - action: replace
+            replacement: /var/log/containers/$1_$2_$3-*.log
+            target_label: __path__
+            source_labels:
+              - __meta_kubernetes_pod_name
+              - __meta_kubernetes_namespace
+              - __meta_kubernetes_container_name
+      - job_name: fengqi-prod-service-logs
+        kubernetes_sd_configs:
+          - role: pod
+        pipeline_stages:
+          - docker: {}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: fengqi-prod
+            action: keep
+          - action: replace
+            source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - action: replace
+            source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - replacement: prod
+            target_label: environment
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            regex: .*-service$
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: node
+          - action: replace
+            source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          - action: replace
+            source_labels: [__meta_kubernetes_container_name]
+            target_label: container
+          - action: replace
+            replacement: /var/log/containers/$1_$2_$3-*.log
+            target_label: __path__
+            source_labels:
+              - __meta_kubernetes_pod_name
+              - __meta_kubernetes_namespace
+              - __meta_kubernetes_container_name
+      - job_name: argocd-logs
+        kubernetes_sd_configs:
+          - role: pod
+        pipeline_stages:
+          - docker: {}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: argocd
+            action: keep
+          - action: replace
+            source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - action: replace
+            source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - replacement: argocd
+            target_label: environment
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: node
+          - action: replace
+            source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          - action: replace
+            source_labels: [__meta_kubernetes_container_name]
+            target_label: container
+          - action: replace
+            replacement: /var/log/containers/$1_$2_$3-*.log
+            target_label: __path__
+            source_labels:
+              - __meta_kubernetes_pod_name
+              - __meta_kubernetes_namespace
               - __meta_kubernetes_container_name
 ---
 apiVersion: apps/v1

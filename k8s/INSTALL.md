@@ -205,3 +205,40 @@ sudo vi sudo vi /etc/containerd/config.toml
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."192.168.1.27:8090"]
           endpoint = ["http://192.168.1.27:8090"]
 ```
+
+### 查看pod指定行数的日志
+```bash
+#  kubectl logs -n loki loki-promtail-g4gws --tail=20
+kubectl logs -f loki-promtail-g4gws -n loki --tail=10
+kubectl logs -f pod_name -n namespace --tail=10
+kubectl logs -f pod_name -n namespace --tail=10 | grep "error"
+kubectl logs -f pod_name -n namespace --tail=10 | grep "error" | grep "cannot"
+```
+
+### 批量删除 pods
+```bash
+# kubectl delete pods -n loki -l app=loki-promtail
+kubectl delete pods -l app=nginx -n nginx
+kubectl delete pods -l app=nginx -n nginx --force --grace-period=0
+kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all
+kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all --ignore-not-found
+kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all --ignore-not-found --timeout=5s
+kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all --ignore-not-found --timeout=5s --wait=false
+kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all --ignore-not-found --timeout=5s --wait=false --force-deletion
+kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all --ignore-not-found --timeout=5s --wait=false --force-deletion --force-deletion-propagation=Background
+```
+
+### 列出所有的PODS
+```bash
+kubectl get pods --all-namespaces
+kubectl get pods --all-namespaces -o wide
+kubectl get pods -A
+kubectl get pods -A -o wide
+```
+
+### 查看命名空间日志
+```bash
+kubectl logs -n loki -l app=loki
+kubectl logs -n loki -l app=loki-promtail
+kubectl logs -n kube-system -l k8s-app=kube-dns
+```
