@@ -1,0 +1,108 @@
+pipeline {
+    agent any
+
+    environment {
+        ENV             = "dev"
+        MYSQL_DSN       = credentials("dev_mysql_dsn")
+        DOCKER_USERNAME = credentials("dev_harbor_username")
+        DOCKER_PASSWORD = credentials("dev_harbor_password")
+        APISIX_KEY      = credentials("dev_apisix_key")
+    }
+
+    stages {
+        stage('1. 拉取代码') {
+            steps {
+//                 checkout scm
+                echo "1. 拉取代码 - 开始"
+                echo "项目: ${JOB_NAME}"
+                echo "构建号: ${BUILD_NUMBER}"
+            }
+        }
+
+        stage('2. 拷贝工作文件到远程主机') {
+            steps {
+                script {
+                    try {
+                        def result = sshPublisher(publishers: [sshPublisherDesc(configName: 'jenkins-work', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: " mkdir -p $JOB_NAME/ $JOB_NAME/scripts/", execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "$JOB_NAME/", remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'scripts/*')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+                    } catch (Exception e) {
+                        // 捕获执行过程中的异常
+                        echo "Deployment failed: ${e.getMessage()}"
+                        // 抛出异常以标记构建为失败状态
+                        throw e
+                    }
+                }
+            }
+        }
+
+        stage('3. SonarQube 代码检测') {
+            steps {
+                echo "3. SonarQube 代码检测"
+            }
+        }
+
+        stage('4. APISIX 发布路由') {
+            steps {
+                sh "chmod +x ./scripts/apisix.sh"
+                sh "./scripts/apisix.sh ${DEV_APISIX_ROUTE_ADMIN} ${DEV_APISIX_PROTO_ADMIN} ${APISIX_KEY} ${JOB_NAME}"
+            }
+        }
+
+        stage('5. MySQL 数据迁移') {
+            steps {
+                echo "5. MySQL 数据迁移"
+                sh "chmod +x ./scripts/migrate.sh"
+                sh 'scripts/migrate.sh ${MYSQL_DSN} db/migrations'
+            }
+        }
+
+        stage('6. 登录docker') {
+            steps {
+                sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${DEV_REGISTRY_ADDR}"
+            }
+        }
+
+        stage('7. Docker 构建镜像') {
+            steps {
+                sh "chmod +x ./scripts/docker-build.sh"
+                sh "./scripts/docker-build.sh ${DEV_REGISTRY_ADDR} ${JOB_NAME}"
+            }
+        }
+
+        stage('8. Docker 推送镜像') {
+            steps {
+                sh "chmod +x ./scripts/docker-push.sh"
+                sh "./scripts/docker-push.sh ${DEV_REGISTRY_ADDR} ${JOB_NAME}"
+            }
+        }
+
+        stage('9. 部署服务（远程执行）') {
+            steps {
+                script {
+                    try {
+                        echo "$DEV_JENKINS_WORKSPACE/$JOB_NAME/scripts/deployment.sh $DEV_JENKINS_WORKSPACE/$JOB_NAME/scripts $ENV ${JOB_NAME} ${FENGQI_NAMESPACE}"
+                        def result = sshPublisher(publishers: [sshPublisherDesc(configName: 'jenkins-work', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: """chmod -R +x $DEV_JENKINS_WORKSPACE/$JOB_NAME/scripts/*
+                        $DEV_JENKINS_WORKSPACE/$JOB_NAME/scripts/deployment.sh $DEV_JENKINS_WORKSPACE/$JOB_NAME/scripts $ENV ${JOB_NAME} ${FENGQI_NAMESPACE}""", execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+                    } catch (Exception e) {
+                        // 捕获执行过程中的异常
+                        echo "Deployment failed: ${e.getMessage()}"
+                        // 抛出异常以标记构建为失败状态
+                        throw e
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            mail to: '10000@qq.com',
+                subject: "构建成功：${JOB_NAME} #${BUILD_NUMBER}",
+                body: "构建成功！"
+        }
+        failure {
+            mail to: '10000@qq.com',
+                subject: "构建失败：${JOB_NAME} #${BUILD_NUMBER}",
+                body: "构建失败，请尽快处理。"
+        }
+    }
+}
