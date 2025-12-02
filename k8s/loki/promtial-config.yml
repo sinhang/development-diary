@@ -8,6 +8,7 @@ data:
     server:
       http_listen_port: 9080
       grpc_listen_port: 0
+      log_level: debug
 
     positions:
       filename: /run/promtail/positions.yaml
@@ -16,46 +17,48 @@ data:
       - url: http://loki.loki.svc.cluster.local:3100/loki/api/v1/push
 
     scrape_configs:
+      # Job 1: 收集系统日志
       - job_name: system
         static_configs:
           - targets: ['localhost']
             labels:
               job: varlogs
-              __path__: /var/log/*log
-        # 添加采样阶段减少日志量
-        pipeline_stages:
-          - sampling:
-              rate: 0.1  # 只采集10%的日志
-          - drop:
-              source: filename
-              regex: ".*\\.log\\.[0-9]+$"  # 排除轮转日志文件
-      - job_name: pods
+              __path__: /var/log/*.log
+
+      # Job 2: 收集所有 Pod 日志（使用 /var/log/pods/ 目录）
+      - job_name: kubernetes-pods
         kubernetes_sd_configs:
           - role: pod
         pipeline_stages:
           - docker: {}
         relabel_configs:
+          # 基础标签
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_container_name]
+            target_label: container
           - source_labels: [__meta_kubernetes_pod_node_name]
             target_label: node
-          - action: replace
-            source_labels: [__meta_kubernetes_pod_name]
-            target_label: pod
-          - action: replace
-            source_labels: [__meta_kubernetes_namespace]
-            target_label: namespace
-          - action: replace
-            source_labels: [__meta_kubernetes_pod_label_app]
+          
+          # 应用标签（兼容多种标签格式）
+          - source_labels: [__meta_kubernetes_pod_label_app]
             target_label: app
-          - action: replace
-            source_labels: [__meta_kubernetes_container_name]
-            target_label: container
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+            target_label: app_kubernetes_io_name
+          
+          # 关键修改：使用 /var/log/pods/ 路径
           - action: replace
             replacement: /var/log/pods/$1/$2/*.log
+            separator: '/'
             target_label: __path__
             source_labels:
               - __meta_kubernetes_pod_uid
               - __meta_kubernetes_container_name
-      - job_name: fengqi-dev-service-logs
+
+      # Job 3: fengqi-dev 命名空间
+      - job_name: fengqi-dev
         kubernetes_sd_configs:
           - role: pod
         pipeline_stages:
@@ -64,33 +67,24 @@ data:
           - source_labels: [__meta_kubernetes_namespace]
             regex: fengqi-dev
             action: keep
-          - action: replace
-            source_labels: [__meta_kubernetes_pod_name]
-            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
           - replacement: dev
             target_label: environment
-          - action: replace
-            source_labels: [__meta_kubernetes_namespace]
-            target_label: namespace
-          - source_labels: [__meta_kubernetes_pod_label_app]
-            regex: .*-service$
-            action: keep
-          - source_labels: [__meta_kubernetes_pod_node_name]
-            target_label: node
-          - action: replace
-            source_labels: [__meta_kubernetes_pod_label_app]
-            target_label: app
-          - action: replace
-            source_labels: [__meta_kubernetes_container_name]
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_container_name]
             target_label: container
           - action: replace
-            replacement: /var/log/containers/$1_$2_$3-*.log
+            replacement: /var/log/pods/$1/$2/*.log
+            separator: '/'
             target_label: __path__
             source_labels:
-              - __meta_kubernetes_pod_name
-              - __meta_kubernetes_namespace
+              - __meta_kubernetes_pod_uid
               - __meta_kubernetes_container_name
-      - job_name: fengqi-test-service-logs
+
+      # Job 4: fengqi-test 命名空间
+      - job_name: fengqi-test
         kubernetes_sd_configs:
           - role: pod
         pipeline_stages:
@@ -99,33 +93,24 @@ data:
           - source_labels: [__meta_kubernetes_namespace]
             regex: fengqi-test
             action: keep
-          - action: replace
-            source_labels: [__meta_kubernetes_pod_name]
-            target_label: pod
-          - action: replace
-            source_labels: [__meta_kubernetes_namespace]
+          - source_labels: [__meta_kubernetes_namespace]
             target_label: namespace
           - replacement: test
             target_label: environment
-          - source_labels: [__meta_kubernetes_pod_label_app]
-            regex: .*-service$
-            action: keep
-          - source_labels: [__meta_kubernetes_pod_node_name]
-            target_label: node
-          - action: replace
-            source_labels: [__meta_kubernetes_pod_label_app]
-            target_label: app
-          - action: replace
-            source_labels: [__meta_kubernetes_container_name]
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_container_name]
             target_label: container
           - action: replace
-            replacement: /var/log/containers/$1_$2_$3-*.log
+            replacement: /var/log/pods/$1/$2/*.log
+            separator: '/'
             target_label: __path__
             source_labels:
-              - __meta_kubernetes_pod_name
-              - __meta_kubernetes_namespace
+              - __meta_kubernetes_pod_uid
               - __meta_kubernetes_container_name
-      - job_name: fengqi-prod-service-logs
+
+      # Job 5: fengqi-prod 命名空间
+      - job_name: fengqi-prod
         kubernetes_sd_configs:
           - role: pod
         pipeline_stages:
@@ -134,33 +119,24 @@ data:
           - source_labels: [__meta_kubernetes_namespace]
             regex: fengqi-prod
             action: keep
-          - action: replace
-            source_labels: [__meta_kubernetes_pod_name]
-            target_label: pod
-          - action: replace
-            source_labels: [__meta_kubernetes_namespace]
+          - source_labels: [__meta_kubernetes_namespace]
             target_label: namespace
           - replacement: prod
             target_label: environment
-          - source_labels: [__meta_kubernetes_pod_label_app]
-            regex: .*-service$
-            action: keep
-          - source_labels: [__meta_kubernetes_pod_node_name]
-            target_label: node
-          - action: replace
-            source_labels: [__meta_kubernetes_pod_label_app]
-            target_label: app
-          - action: replace
-            source_labels: [__meta_kubernetes_container_name]
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_container_name]
             target_label: container
           - action: replace
-            replacement: /var/log/containers/$1_$2_$3-*.log
+            replacement: /var/log/pods/$1/$2/*.log
+            separator: '/'
             target_label: __path__
             source_labels:
-              - __meta_kubernetes_pod_name
-              - __meta_kubernetes_namespace
+              - __meta_kubernetes_pod_uid
               - __meta_kubernetes_container_name
-      - job_name: argocd-logs
+
+      # Job 6: argocd 命名空间
+      - job_name: argocd
         kubernetes_sd_configs:
           - role: pod
         pipeline_stages:
@@ -169,28 +145,20 @@ data:
           - source_labels: [__meta_kubernetes_namespace]
             regex: argocd
             action: keep
-          - action: replace
-            source_labels: [__meta_kubernetes_pod_name]
-            target_label: pod
-          - action: replace
-            source_labels: [__meta_kubernetes_namespace]
+          - source_labels: [__meta_kubernetes_namespace]
             target_label: namespace
           - replacement: argocd
             target_label: environment
-          - source_labels: [__meta_kubernetes_pod_node_name]
-            target_label: node
-          - action: replace
-            source_labels: [__meta_kubernetes_pod_label_app]
-            target_label: app
-          - action: replace
-            source_labels: [__meta_kubernetes_container_name]
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_container_name]
             target_label: container
           - action: replace
-            replacement: /var/log/containers/$1_$2_$3-*.log
+            replacement: /var/log/pods/$1/$2/*.log
+            separator: '/'
             target_label: __path__
             source_labels:
-              - __meta_kubernetes_pod_name
-              - __meta_kubernetes_namespace
+              - __meta_kubernetes_pod_uid
               - __meta_kubernetes_container_name
 ---
 apiVersion: apps/v1
@@ -208,9 +176,9 @@ spec:
         app: loki-promtail
     spec:
       tolerations:
-        - operator: Exists   # ⭐ 确保所有节点都跑，包括 master
+        - operator: Exists
       securityContext:
-        runAsUser: 0          # ⭐ 允许 Promtail 用 root 读取日志
+        runAsUser: 0
       containers:
         - name: promtail
           image: grafana/promtail:3.5.8
@@ -224,9 +192,7 @@ spec:
             - name: varlog
               mountPath: /var/log
             - name: pods
-              mountPath: /var/log/pods
-            - name: containers
-              mountPath: /var/log/containers
+              mountPath: /var/log/pods  # 确保挂载了这个目录
       volumes:
         - name: config
           configMap:
@@ -238,8 +204,5 @@ spec:
             path: /var/log
         - name: pods
           hostPath:
-            path: /var/log/pods
-        - name: containers
-          hostPath:
-            path: /var/log/containers
+            path: /var/log/pods  # 确保挂载了这个目录
       serviceAccountName: promtail

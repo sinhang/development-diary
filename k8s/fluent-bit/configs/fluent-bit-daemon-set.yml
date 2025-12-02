@@ -4,15 +4,15 @@ metadata:
   name: fluent-bit
   namespace: kube-system
   labels:
-    k8s-app: fluent-bit-logging
+    k8s-app: fluent-bit
 spec:
   selector:
     matchLabels:
-      k8s-app: fluent-bit-logging
+      k8s-app: fluent-bit
   template:
     metadata:
       labels:
-        k8s-app: fluent-bit-logging
+        k8s-app: fluent-bit
     spec:
       serviceAccountName: fluent-bit
       containers:
