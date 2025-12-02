@@ -1,0 +1,138 @@
+# 在 fluent-bit.conf 中添加更多输出
+fluent-bit.conf: |
+  # SERVICE 部分定义 Fluent Bit 的核心服务配置
+  [SERVICE]
+    Flush         1              # 设置刷新间隔为1秒，控制数据从输入到输出的处理频率
+    Log_Level     info           # 设置日志级别为info，控制Fluent Bit自身的日志输出详细程度
+    Daemon        off            # 不以守护进程模式运行
+    Parsers_File  parsers.conf   # 指定解析器配置文件路径
+    # 添加多级解析
+    Parsers_File  parsers_multiline.conf  # 指定多行日志解析器配置文件路径
+
+  # 包含其他配置文件
+  @INCLUDE input-kubernetes.conf       # 引入Kubernetes输入配置
+  @INCLUDE filter-kubernetes.conf      # 引入Kubernetes过滤器配置
+  @INCLUDE filter-modify.conf          # 新增修改过滤器配置
+  @INCLUDE output-loki-err.conf        # 引入错误级别日志的Loki输出配置
+  @INCLUDE output-loki-warn.conf       # 引入警告级别日志的Loki输出配置
+  @INCLUDE output-loki-info.conf       # 引入信息级别日志的Loki输出配置
+  @INCLUDE output-loki-debug.conf      # 引入调试级别日志的Loki输出配置
+
+# 新增 filter-modify.conf
+filter-modify.conf: |
+  # 第一个FILTER：为没有明确级别的日志设置默认级别为info
+  [FILTER]
+    Name          modify                    # 使用modify插件
+    Match         *                         # 匹配所有日志记录
+    # 添加日志级别字段
+    Add           log_level info            # 添加log_level字段，默认值为info
+    Condition     Key_Value_Regex  log ^(?!.*(error|Error|ERROR|warn|Warn|WARN|debug|Debug|DEBUG|info|Info|INFO)).*$  # 条件：日志内容不包含任何已知级别的关键词
+
+  # 第二个FILTER：识别并标记错误级别日志
+  [FILTER]
+    Name          modify                    # 使用modify插件
+    Match         *                         # 匹配所有日志记录
+    Set           log_level error           # 设置log_level字段为error
+    Condition     Key_Value_Regex  log .*(error|Error|ERROR).*  # 条件：日志内容包含error相关关键词
+
+  # 第三个FILTER：识别并标记警告级别日志
+  [FILTER]
+    Name          modify                    # 使用modify插件
+    Match         *                         # 匹配所有日志记录
+    Set           log_level warn            # 设置log_level字段为warn
+    Condition     Key_Value_Regex  log .*(warn|Warn|WARN|warning|Warning).*  # 条件：日志内容包含warn相关关键词
+
+  # 第四个FILTER：识别并标记调试级别日志
+  [FILTER]
+    Name          modify                    # 使用modify插件
+    Match         *                         # 匹配所有日志记录
+    Set           log_level debug           # 设置log_level字段为debug
+    Condition     Key_Value_Regex  log .*(debug|Debug|DEBUG).*  # 条件：日志内容包含debug相关关键词
+
+input-kubernetes.conf: |
+  [INPUT]
+    Name              tail              # 使用tail输入插件，用于读取文件尾部新增内容
+    Tag               kube.*            # 为输入的日志记录设置tag前缀，匹配以kube开头的tag
+    Path              /var/log/containers/*.log  # 监控容器日志文件路径，Kubernetes容器日志存储位置
+    Parser            docker            # 使用docker解析器处理日志格式
+    DB                /var/log/flb_kube.db       # 数据库文件路径，用于记录文件监控状态和偏移量
+    Mem_Buf_Limit     5MB               # 内存缓冲区限制，防止内存溢出
+    Skip_Long_Lines   On                # 跳过过长的日志行，避免处理异常大的日志记录
+    Refresh_Interval  10                # 刷新间隔，每隔10秒检查新文件或文件变化
+
+filter-kubernetes.conf: |
+  [FILTER]
+    Name                kubernetes        # 使用kubernetes过滤器插件
+    Match               kube.*            # 匹配以kube开头的tag的日志记录
+    Kube_URL            https://kubernetes.default.svc:443  # Kubernetes API服务器地址
+    Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt  # CA证书文件路径
+    Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token   # ServiceAccount令牌文件路径
+    K8S-Logging.Parser  On                # 启用Kubernetes注解中的解析器
+    K8S-Logging.Exclude On                # 启用Kubernetes注解中的排除规则
+    Merge_Log           On                # 合并结构化日志到根级别
+    Keep_Log            Off               # 不保留原始log字段，节省存储空间
+
+output-loki.conf: |
+  [OUTPUT]
+    Name            loki                  # 使用loki输出插件
+    Match           *                     # 匹配所有tag的日志记录
+    Host            loki.loki.svc.cluster.local  # Loki服务主机地址
+    Port            3100                  # Loki服务端口
+    Labels          job=fluent-bit        # 设置静态标签，标识作业名称
+    Auto_Kubernetes_Labels On             # 自动添加Kubernetes标签
+    Label_Keys      $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name']  # 提取Kubernetes元数据作为动态标签
+    Remove_Keys     kubernetes            # 移除kubernetes字段以减少传输数据量
+    Line_Format     json                  # 日志行格式设置为json
+
+parsers.conf: |
+  [PARSER]
+    Name        docker                    # 解析器名称，与INPUT中的Parser字段对应
+    Format      json                      # 日志格式为JSON
+    Time_Key    time                      # 时间戳字段名
+    Time_Format %Y-%m-%dT%H:%M:%S.%L      # 时间格式，符合ISO8601标准
+    Time_Keep   On                        # 保留原始时间字段
+
+# 按级别分离输出
+output-loki-err.conf: |
+  # 错误级别日志输出到Loki的配置
+  [OUTPUT]
+    Name            loki                            # 使用loki输出插件
+    Match           kube.*                          # 匹配以kube开头的tag的日志记录
+    Host            loki.loki.svc.cluster.local     # Loki服务主机地址
+    Port            3100                            # Loki服务端口
+    Labels          job=fluent-bit,level=error      # 设置静态标签，标识作业名称和日志级别
+    Label_Keys      $kubernetes['namespace_name'],$kubernetes['pod_name']  # 从Kubernetes元数据中提取命名空间和Pod名称作为动态标签
+    Auto_Kubernetes_Labels On                       # 自动添加Kubernetes标签
+
+output-loki-warn.conf: |
+  # 警告级别日志输出到Loki的配置
+  [OUTPUT]
+    Name            loki                            # 使用loki输出插件
+    Match           kube.*                          # 匹配以kube开头的tag的日志记录
+    Host            loki.loki.svc.cluster.local     # Loki服务主机地址
+    Port            3100                            # Loki服务端口
+    Labels          job=fluent-bit,level=warn       # 设置静态标签，标识作业名称和日志级别
+    Label_Keys      $kubernetes['namespace_name'],$kubernetes['pod_name']  # 从Kubernetes元数据中提取命名空间和Pod名称作为动态标签
+    Auto_Kubernetes_Labels On                       # 自动添加Kubernetes标签
+
+output-loki-info.conf: |
+  # 信息级别日志输出到Loki的配置
+  [OUTPUT]
+    Name            loki                            # 使用loki输出插件
+    Match           kube.*                          # 匹配以kube开头的tag的日志记录
+    Host            loki.loki.svc.cluster.local     # Loki服务主机地址
+    Port            3100                            # Loki服务端口
+    Labels          job=fluent-bit,level=info       # 设置静态标签，标识作业名称和日志级别
+    Label_Keys      $kubernetes['namespace_name'],$kubernetes['pod_name']  # 从Kubernetes元数据中提取命名空间和Pod名称作为动态标签
+    Auto_Kubernetes_Labels On                       # 自动添加Kubernetes标签
+
+output-loki-debug.conf: |
+  # 调试级别日志输出到Loki的配置
+  [OUTPUT]
+    Name            loki                            # 使用loki输出插件
+    Match           kube.*                          # 匹配以kube开头的tag的日志记录
+    Host            loki.loki.svc.cluster.local     # Loki服务主机地址
+    Port            3100                            # Loki服务端口
+    Labels          job=fluent-bit,level=debug      # 设置静态标签，标识作业名称和日志级别
+    Label_Keys      $kubernetes['namespace_name'],$kubernetes['pod_name']  # 从Kubernetes元数据中提取命名空间和Pod名称作为动态标签
+    Auto_Kubernetes_Labels On                       # 自动添加Kubernetes标签
