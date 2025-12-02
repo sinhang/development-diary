@@ -1,5 +1,8 @@
 ### INSTALL LOKI
 
+1. [loki docs](https://grafana.com/docs/loki/latest/installation/)
+2. [promtail docs](https://grafana.com/docs/loki/latest/send-data/promtail/)
+
 ### 下载镜像
 ```bash
 docker pull grafana/loki:3.5.8
