@@ -4,6 +4,9 @@
 2. [github](https://github.com/fluent/fluent-bit)
 3. [docs](https://docs.fluentbit.io/manual/installation/downloads)
 
+### workflow
+![workflow](../../static/images/fluent-bit/workflow-image.png)
+
 ### sudo ctr images pull cr.fluentbit.io/fluent/fluent-bit:4.2.0-amd64
 1. [proxy](../containerd/PROXY.md)
 ```bash
