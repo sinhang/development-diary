@@ -6,8 +6,9 @@
 1. 进入 [ComfyUI](https://github.com/comfyanonymous/ComfyUI) 仓库
 2. 点击 `Code` 按钮，选择 `Download ZIP` 或者 `Code` 按钮下方的 `Clone` 按钮，选择 `HTTPS` 或 `SSH`
 3. 解压下载的 ZIP 文件 或者 clone
-4. 设置 Python 环境 [pyenv](../pyenv/INSTALL.md)
-5. 安装 torch
+4. [安装 pyenv 及设置 Python 环境](../pyenv/INSTALL.md)
+5. [查看CUDA版本](../../cuda/CUDA.md)
+6. 安装 torch
 
 ```shell
 cd /home/<username>
@@ -16,8 +17,14 @@ pyenv local <python_version>
 python -m venv .venv
 source venv/bin/activate
 
-# 安装 torch
-pip install torch==2.9.1+cu130 torchvision==0.24.1+cu130 torchaudio==2.9.1+cu130 --index-url https://download.pytorch.org/whl/cu130 onnxruntime-gpu xformers
+# 查看CUDA版本
+nvidia-smi
+
+# 安装 torch, 我这边 cuda版本为 13.0
+pip install torch==2.9.1+cu130 torchvision==0.24.1+cu130 torchaudio==2.9.1+cu130 --index-url https://download.pytorch.org/whl/cu130
+
+# 安装 xformers 及 onnxruntime
+pip install onnxruntime-gpu xformers
 
 # 安装依赖
 pip install -r requirements.txt
