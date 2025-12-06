@@ -185,6 +185,8 @@ O^O/ \_/ \    Batch size per device = 4 | Gradient accumulation steps = 4
 ### 结果
 ```bash
 tree ./results/
+```
+```
 ./results/
 ├── checkpoint-3
 │   ├── adapter_config.json
@@ -211,9 +213,12 @@ tree ./results/
         └── events.out.tfevents.1764983955.mercury-X99.2014499.0
 
 7 directories, 17 files
+```
 
-
+```bash
 tree my_customer_service_lora
+```
+```
 my_customer_service_lora
 ├── adapter_config.json
 ├── adapter_model.safetensors
@@ -224,3 +229,5 @@ my_customer_service_lora
 
 1 directory, 6 files
 ```
+
+### 使用训练的后的模型
