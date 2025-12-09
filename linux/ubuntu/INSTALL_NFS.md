@@ -26,6 +26,8 @@ sudo apt full-upgrade -y
 sudo apt install nfs-common -y
 # 挂载
 sudo mount -t nfs4 192.168.1.27:/mnt/hdd/nfs/data /mnt/nfs
+
+sudo mount -t nfs 192.168.1.27:/data /mnt/nfs
 ```
 
 
