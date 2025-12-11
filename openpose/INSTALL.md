@@ -74,7 +74,10 @@ cmake .. -DBUILD_PYTHON=ON -DUSE_CUDA=ON
 make -j$(nproc)
 
 sudo make install
+```
 
+### 测试
+```bash
 cd ../
 ./build/examples/openpose/openpose.bin --image_dir /mnt/nvme2/develope/develope/code/py-project/smplify-x/data/images/ --display 0 --write_images output/ --write_json output_json/ --hand --face --model_pose BODY_25
 ```
