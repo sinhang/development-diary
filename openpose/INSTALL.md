@@ -28,8 +28,37 @@ sudo apt install -y \
 ### 下载模型
 ```bash
 cd models
-# 如果太慢可以复制URL到浏览器下载
+# 如果太慢可以复制URL到浏览器下载,下载完成后放置对应目录中
 ./getModels.sh
+```
+```
+tree models
+models
+├── cameraParameters
+│   └── flir
+│       └── 17012332.xml.example
+├── face
+│   ├── haarcascade_frontalface_alt.xml
+│   ├── pose_deploy.prototxt
+│   └── pose_iter_116000.caffemodel
+├── getModels.bat
+├── getModels.sh
+├── hand
+│   ├── pose_deploy.prototxt
+│   └── pose_iter_102000.caffemodel
+└── pose
+    ├── body_25
+    │   ├── pose_deploy.prototxt
+    │   └── pose_iter_584000.caffemodel
+    ├── coco
+    │   ├── pose_deploy_linevec.prototxt
+    │   └── pose_iter_440000.caffemodel
+    └── mpi
+        ├── pose_deploy_linevec_faster_4_stages.prototxt
+        ├── pose_deploy_linevec.prototxt
+        └── pose_iter_160000.caffemodel
+
+9 directories, 15 files
 ```
 
 ### 编译
