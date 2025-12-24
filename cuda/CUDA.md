@@ -1,5 +1,10 @@
 ### CUDA
 
+### 安装CUDA
+```bash
+sudo apt install nvidia-driver-580 -y
+```
+
 ### 查看CUDA版本
 ```bash
 nvidia-smi

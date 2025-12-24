@@ -79,5 +79,5 @@ sudo make install
 ### 测试
 ```bash
 cd ../
-./build/examples/openpose/openpose.bin --image_dir /mnt/nvme2/develope/develope/code/py-project/smplify-x/data/images/ --display 0 --write_images output/ --write_json output_json/ --hand --face --model_pose BODY_25
+./build/examples/openpose/openpose.bin --image_dir /mnt/nvme2/develope/develope/code/py-project/Smplify-X-Perfect-Implementation/data/images/ --display 0 --write_images output/ --write_json output_json/ --hand --face --model_pose BODY_25
 ```

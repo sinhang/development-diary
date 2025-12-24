@@ -13,6 +13,9 @@ sudo nano /etc/exports
 /mnt/hdd/nfs *(rw,sync,no_subtree_check,fsid=0,no_root_squash)
 /mnt/hdd/nfs/data *(rw,sync,no_subtree_check,no_root_squash)
 
+/mnt/hdd/nfs/comfyui/input *(ro,sync,no_subtree_check,no_root_squash)
+/mnt/hdd/nfs/comfyui/output *(ro,sync,no_subtree_check,no_root_squash)
+
 sudo exportfs -a
 sudo systemctl restart nfs-kernel-server
 sudo systemctl status nfs-kernel-server
@@ -37,4 +40,31 @@ sudo mount -t nfs -o vers=3 192.168.1.27:/mnt/hdd/nfs/data /tmp/testnfs
 
 # v4 版本
 sudo mount -t nfs 192.168.1.27:/data /tmp/testnfs
+
+
+sudo mount -t nfs 192.168.1.100:/comfyui/input /mnt/hdd2/workflow/input
 ```
+
+### 客户端添加到开机启动
+```bash
+sudo vi /etc/fstab
+192.168.1.100:/comfyui/input  /mnt/hdd2/workflow/input  nfs  _netdev,noatime  0  0
+192.168.1.100:/comfyui/output /mnt/hdd2/workflow/output nfs  _netdev,noatime  0  0
+# or
+192.168.1.100:/comfyui/input  /mnt/hdd2/workflow/input  nfs  _netdev,x-systemd.automount  0  0
+192.168.1.100:/comfyui/output  /mnt/hdd2/workflow/output  nfs  _netdev,x-systemd.automount  0  0
+# or
+192.168.1.100:/comfyui/input  /mnt/hdd2/workflow/input  nfs  _netdev,x-systemd.automount,noatime,actimeo=0  0  0
+192.168.1.100:/comfyui/output /mnt/hdd2/workflow/output nfs  _netdev,x-systemd.automount,noatime,actimeo=0  0  0
+
+
+192.168.1.100:/comfyui/input  /mnt/nfs/input  nfs  _netdev,x-systemd.automount,noatime,actimeo=0  0  0
+192.168.1.100:/comfyui/output  /mnt/nfs/output  nfs  _netdev,x-systemd.automount,noatime,actimeo=0  0  0
+
+```
+| 参数                    | 作用                       |
+| --------------------- | ------------------------ |
+| `actimeo=0`           | 禁用 attribute & dir cache |
+| `_netdev`             | 等网络                      |
+| `x-systemd.automount` | 按需挂载                     |
+| `noatime`             | 减 IO                     |

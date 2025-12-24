@@ -50,9 +50,24 @@ sudo tee /etc/docker/daemon.json <<-'EOF'
   ]
 }
 EOF
+
+
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+    "registry-mirrors": [
+        "https://docker.1ms.run",
+        "https://docker.xuanyuan.me" 
+    ],
+    "insecure-registries": ["192.168.1.100:5000"]
+}
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl restart docker
 ```
 
 ### 启动docker
 ```shell
 sudo systemctl start docker
 ```
+

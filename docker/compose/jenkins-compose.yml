@@ -11,6 +11,7 @@ services:
       - /usr/bin/docker:/usr/bin/docker
       - /etc/timezone:/etc/timezone:ro  # 同步时区
       - /etc/localtime:/etc/localtime:ro
+      - /etc/docker/daemon.json:/etc/docker/daemon.json:ro
     # environment:
       # - JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Duser.timezone=Asia/Shanghai
     user: "1000:1000"

@@ -22,7 +22,7 @@ nvidia-smi
 
 # 安装 torch, 我这边 cuda版本为 13.0
 pip install torch==2.9.1+cu130 torchvision==0.24.1+cu130 torchaudio==2.9.1+cu130 --index-url https://download.pytorch.org/whl/cu130
-
+# pip install torch==2.7.1+cu128 torchvision==0.22.1+cu128 torchaudio==2.7.1+cu128 --index-url https://download.pytorch.org/whl/cu128
 # 安装 xformers 及 onnxruntime
 pip install onnxruntime-gpu xformers
 
@@ -159,7 +159,7 @@ python main.py --help
 
 ### 启动
 ```bash
-python main.py --listen 0.0.0.0 --port 8188 --cuda-device 0
+python main.py --listen 0.0.0.0 --port 8188 --cuda-device 0 --output-directory /output --input-directory /input
 ```
 
 [http://127.0.0.1:8188](http://127.0.0.1:8188)

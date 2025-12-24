@@ -7,12 +7,13 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=LHPeXJZ7JqvLiQTC
     ports:
-      - "3306:3306"
+      - "3308:3306"
     command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
     volumes:
-      - ./mysql/data:/var/lib/mysql
-      - ./mysql/logs:/var/log/mysql
-      - ./mysql/conf/my.cnf:/etc/mysql/my.cnf
+      - ./data:/var/lib/mysql
+      - ./logs:/var/log/mysql
+      - ./conf/my.cnf:/etc/mysql/my.cnf
+    user: "1000:1000"
 
-# sudo chown -R 999:999 ./mysql/data ./mysql/logs
-# sudo chmod -R 777 ./mysql/data ./mysql/logs
+# sudo chown -R 999:999 ./data ./logs
+# sudo chmod -R 777 ./data ./logs

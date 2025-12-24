@@ -1,0 +1,29 @@
+services:
+  comfyui:
+    image: "nvidia/cuda:13.0.0-cudnn-devel-ubuntu24.04"
+    container_name: comfyui-9010
+    volumes:
+      - ./ComfyUI:/app
+      - /mnt/hdd2/models:/app/models
+      - ./output:/output
+      - ./input:/input
+      - /mnt/hdd1/soft/clash/:/clash
+    ports:
+      - "9010:9010"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
+    command: "/bin/sh"
+    # command: "/app/python main.py --listen 0.0.0.0 --port 8188 --cuda-device 0 --output-directory /output --input-directory /input"
+
+
+# deploy.resources.reservations.devices: 定义设备资源预留
+# driver: nvidia: 指定使用 NVIDIA 驱动
+# count: all: 相当于 --gpus all
+# capabilities: [gpu]: 指定 GPU 能力
