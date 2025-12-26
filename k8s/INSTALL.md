@@ -211,6 +211,30 @@ kubectl exec -it ad-service-6479d6c87c-rkmm9 -n fengqi -- /bin/bash
 ```bash
 # Failed to pull image "192.168.1.27:8090/dev/config-service:latest": failed to pull and unpack image "192.168.1.27:8090/dev/config-service:latest": failed to resolve reference "192.168.1.27:8090/dev/config-service:latest": failed to do request: Head "https://192.168.1.27:8090/v2/dev/config-service/manifests/latest": http: server gave HTTP response to HTTPS client
 
+# 新版本
+sudo cat <<EOF | sudo tee /etc/containerd/certs.d/192.168.1.100:5000/hosts.toml
+server = "http://192.168.1.100:5000"
+
+[host."http://192.168.1.100:5000"]
+  capabilities = ["pull", "resolve"]
+  skip_verify = true
+EOF
+
+# 重启 containerd
+sudo systemctl restart containerd
+
+### 如果还不行试试修改配置
+sudo vi sudo vi /etc/containerd/config.toml
+# 找到下面配置
+[plugins.'io.containerd.cri.v1.images'.registry]
+  config_path = '/etc/containerd/certs.d:/etc/docker/certs.d'
+# 将上面的修改为， 去掉 :/etc/docker/certs.d
+[plugins.'io.containerd.cri.v1.images'.registry]
+  config_path = '/etc/containerd/certs.d'
+
+
+### 下面的配置是旧版本的
+
 sudo vi sudo vi /etc/containerd/config.toml
 # 找到 
 #[plugins."io.containerd.grpc.v1.cri".image_decryption]
@@ -222,12 +246,17 @@ sudo vi sudo vi /etc/containerd/config.toml
       [plugins."io.containerd.grpc.v1.cri".registry.auths]
 
       [plugins."io.containerd.grpc.v1.cri".registry.configs]
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."192.168.1.100:5000".tls]
+          insecure_skip_verify = true  # 跳过 HTTPS 验证
 
       [plugins."io.containerd.grpc.v1.cri".registry.headers]
 
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."192.168.1.27:8090"]
-          endpoint = ["http://192.168.1.27:8090"]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."192.168.1.100:5000"]
+          endpoint = ["http://192.168.1.100:5000"]
+
+# 重启 containerd
+sudo systemctl restart containerd
 ```
 
 ### 查看pod指定行数的日志
