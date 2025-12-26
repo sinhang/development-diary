@@ -155,14 +155,13 @@ local function deterministic_json_encode(val)
     local t = type(val)
     if t == "table" then
         if val == ngx.null then return "null" end
-
+        
         -- 判断是否为数组
         local is_array = false
         if #val > 0 then is_array = true end
-        if #val == 0 and next(val) == nil then is_array = true end -- 空表视为数组还是对象？前端空对象{}排序后还是{}
+        if #val == 0 and next(val) == nil then is_array = true end 
 
-        -- 检查是否真的是 Array (OpenResty 中空 table 既可以是 array 也可以是 object，这里简单判断)
-        -- 更严谨的判断需要检查 keys 是否为连续数字
+        -- 检查是否真的是 Array
         local keys = {}
         local is_real_array = true
         for k, _ in pairs(val) do
@@ -171,7 +170,7 @@ local function deterministic_json_encode(val)
             end
             table.insert(keys, k)
         end
-        if #keys == 0 then is_real_array = false end -- 空表默认当对象处理，或者看前端行为
+        if #keys == 0 then is_real_array = false end
 
         if is_real_array then
             -- 数组：对每个元素递归
@@ -186,14 +185,14 @@ local function deterministic_json_encode(val)
             local parts = {}
             for _, k in ipairs(keys) do
                 local v = val[k]
-                -- 前端逻辑：data[keys[i]] = JSON.stringify(data[keys[i]])
-                -- 这里我们是在构建整个 JSON 字符串
                 table.insert(parts, '"' .. k .. '":' .. deterministic_json_encode(v))
             end
             return "{" .. table.concat(parts, ",") .. "}"
         end
     elseif t == "string" then
-        return '"' .. val .. '"'
+        -- [修改点]：使用 cjson.encode 自动处理字符串的转义（如 \ -> \\, " -> \"）
+        -- cjson.encode("a\b") 会返回 "a\\b"，自带双引号
+        return cjson.encode(val)
     elseif t == "boolean" then
         return val and "true" or "false"
     elseif t == "number" then
@@ -201,7 +200,8 @@ local function deterministic_json_encode(val)
     elseif val == ngx.null then
         return "null"
     else
-        return '"' .. tostring(val) .. '"'
+        -- 对于其他类型，兜底使用 cjson 转换，最稳妥
+        return cjson.encode(val)
     end
 end
 

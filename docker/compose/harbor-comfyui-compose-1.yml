@@ -1,7 +1,7 @@
 services:
-  comfyui_9011:
+  comfyui_9010:
     image: "192.168.1.100:5000/cuda/comfyui:v0.0.2"
-    container_name: comfyui-9011
+    container_name: comfyui-9010
     volumes:
       - ./ComfyUI:/app
       - /mnt/hdd2/models:/app/models
@@ -9,11 +9,11 @@ services:
       - ./input:/app/input
       - ./.venv:/app/.venv
     ports:
-      - "9011:9011"
+      - "9010:9010"
     environment:
-      - "DEVICE=1"
+      - "DEVICE=0"
       - "LISTEN=0.0.0.0"
-      - "PORT=9011"
+      - "PORT=9010"
     deploy:
       resources:
         reservations:

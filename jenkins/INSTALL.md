@@ -32,3 +32,20 @@ jenkins  | *************************************************************
 sudo chgrp {当前登录的用户组,id为1000的用户} $USER
 # 可以在 jenkins 容器中执行 docker 命令
 ```
+
+
+### login docker 权限问题
+```bash
+# 以root身份进入容器
+docker exec -u root -it jenkins bash
+
+# 在容器内执行：
+# 1. 创建正确的用户目录
+mkdir -p /home/fengqi
+chown -R 1000:1000 /home/fengqi
+chmod 755 /home/fengqi
+
+# 2. 创建docker配置目录
+mkdir -p /home/fengqi/.docker
+chown -R 1000:1000 /home/fengqi/.docker
+```

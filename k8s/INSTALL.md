@@ -22,15 +22,15 @@ kubectl version --client
 # Kustomize Version: v5.6.0
 ```
 
-### 创建集群
+### 创建集群,master及worker都需要生成配置文件及修改配置文件
 ```bash
 # 生成默认配置
 sudo containerd config default | sudo tee /etc/containerd/config.toml
 # 编辑配置文件
 vi /etc/containerd/config.toml
 # 1. 将 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options] 里面的 SystemdCgroup 设置为 true , 如： SystemdCgroup = true
-# 2. 在 [plugins."io.containerd.grpc.v1.cri"] 下面添加如下内容：sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.10"
-# 3. 如果存在 [plugins.'io.containerd.cri.v1.images'.pinned_images] 则在下面添加如下内容：sandbox = 'registry.aliyuncs.com/google_containers/pause:3.10'
+# 2. 在 [plugins."io.containerd.grpc.v1.cri"] 下面添加如下内容： sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.10"
+# 3. 如果存在 [plugins.'io.containerd.cri.v1.images'.pinned_images] 则在下面添加如下内容： sandbox = 'registry.aliyuncs.com/google_containers/pause:3.10'
 
 # 启动 containerd
 sudo systemctl restart containerd
@@ -38,6 +38,11 @@ sudo systemctl restart containerd
 sudo systemctl status containerd
 # 测试 CRI 是否可用， 如果输出 json 那么恭喜，CRI 已经可用
 sudo crictl info
+
+# 禁用 swap
+# 执行： sudo swapoff -a (不需要重启)  
+# 或者永久禁用 sudo vim /etc/fstab 将 swap 禁用 
+# /swap.img  none  swap  sw  0  0 注释这一行
 
 # 初始化
 sudo kubeadm init --image-repository=registry.aliyuncs.com/google_containers --pod-network-cidr=10.244.0.0/16
@@ -48,8 +53,10 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 # 安装网络插件（如 Calico）
+sudo ctr -n k8s.io images pull registry.aliyuncs.com/google_containers/pause:3.10
 kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 
+# 添加节点
 # sudo kubeadm init --config kubeadm-config.yaml
 # sudo kubeadm token create --print-join-command
 # sudo kubeadm join 192.168.1.100:6443 --token 9d5b0c.c0c0c0c0c0c0c0c0 --discovery-token-ca-cert-hash sha256:c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
@@ -119,6 +126,7 @@ sudo rm -rf $HOME/.kube
 ### 下载并且打标签
 ```bash
 # 从国内源手动拉取镜像
+# sudo ctr -n k8s.io images pull registry.aliyuncs.com/google_containers/pause:3.10
 docker pull registry.cn-hangzhou.aliyuncs.com/calico/cni:v3.25.0
 
 # 重新打标签
@@ -150,6 +158,21 @@ sudo crictl logs <calico-node-container-id>
 ### 外部镜像拉取失败 docker 导出镜像并转 cri 镜像，cri 导入镜像
 ###### 如果 cri 网络插件无法正常启动且是因为无法拉取镜像则尝试如下操作 - master及worker节点都需要做
 ```bash
+
+# 网络插件 calico / master 及 worker 节点 都需要
+docker pull docker.io/calico/cni:v3.25.0
+docker pull docker.io/calico/node:v3.25.0
+docker pull docker.io/calico/kube-controllers:v3.25.0
+
+# 然后转换为 containerd 格式
+docker save docker.io/calico/cni:v3.25.0 | sudo ctr -n=k8s.io images import -
+docker save docker.io/calico/node:v3.25.0 | sudo ctr -n=k8s.io images import -
+docker save docker.io/calico/kube-controllers:v3.25.0 | sudo ctr -n=k8s.io images import -
+
+sudo systemctl restart containerd
+
+
+
 # 导出镜像
 docker save -o calico-cni-v3.25.0.tar calico/cni:v3.25.0
 docker save -o calico-node-v3.25.0.tar calico/node:v3.25.0
