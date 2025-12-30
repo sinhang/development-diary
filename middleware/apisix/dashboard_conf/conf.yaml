@@ -34,6 +34,9 @@ conf:
       cert_file: ""         # Path of your self-signed client side cert
       ca_file: ""           # Path of your self-signed ca cert, the CA is used to sign callers' certificates
     # prefix: /apisix     # apisix config's prefix in etcd, /apisix by default
+  apisix:
+    base_url: http://apisix:9180/apisix/admin  # 确保这个地址正确
+    api_key: FBIshPuLwDLmTbGsqeQUqIUzywbQtIsn
   log:
     error_log:
       level: warn       # supports levels, lower to higher: debug, info, warn, error, panic, fatal

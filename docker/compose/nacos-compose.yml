@@ -16,3 +16,13 @@ services:
       - NACOS_AUTH_USER_AGENT_AUTH_WHITE_ENABLE=true
       - NACOS_AUTH_TOKEN=SecretKey0945029898563945898453485676578974525
     restart: unless-stopped
+
+# sudo docker run --name nacos -itd 
+# -e MODE=standalone 
+# -e NACOS_AUTH_ENABLE=true 
+# -e NACOS_AUTH_IDENTITY_KEY=test 
+# -e NACOS_AUTH_IDENTITY_VALUE=test 
+# -e NACOS_AUTH_USER_AGENT_AUTH_WHITE_ENABLE=true 
+# -e NACOS_AUTH_TOKEN=SecretKey0945029898563945898453485676578974525 
+# -v /mnt/hdd/docker/nacos:/home/nacos/logs 
+# -p 8848:8848 -p 9848:9848 -p 9849:9849 --net uunet --ip 172.18.0.40 nacos/nacos-server:2.0.3

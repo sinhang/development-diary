@@ -41,3 +41,16 @@ pyenv versions
 # 列出所有可以安装的版本
 pyenv install --list
 ```
+
+### ubuntu24.04 使用 pyenv 安装  python3.10.12 需要安装 python 依赖
+```bash
+# 更新包管理器
+sudo apt update
+
+# 安装 Python 编译所需的依赖
+sudo apt install -y make build-essential libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev \
+libffi-dev liblzma-dev
+
+```

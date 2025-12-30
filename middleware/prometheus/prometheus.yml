@@ -61,7 +61,7 @@ scrape_configs:
 
     # 静态目标配置：直接指定目标列表
     static_configs:
-      - targets: ['192.168.1.28:8848', '192.168.1.18:8848']
+      - targets: ['192.168.1.100:8848']
         labels:
           group: 'nacos-servers'
           datacenter: 'nc28'

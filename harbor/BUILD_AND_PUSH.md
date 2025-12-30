@@ -2,7 +2,7 @@
 
 1. build image
 ```bash
-# sudo docker build -t 192.168.1.27:8090/test/config-service:v0.0.1
+# sudo docker build -t 192.168.1.27:8090/test/config-service:v0.0.1 .
 docker build -t <username>/<image_name>:<tag> .
 ```
 

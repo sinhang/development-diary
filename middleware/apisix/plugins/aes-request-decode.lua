@@ -38,7 +38,7 @@ local aes_grpc_attrs = plugin_attr[plugin_name] or {}
 local schema = {
     type = "object",
     properties = {
-        redis_host = {type = "string", default = aes_grpc_attrs.redis_host or "192.168.1.28"},
+        redis_host = {type = "string", default = aes_grpc_attrs.redis_host or "192.168.1.100"},
         redis_port = {type = "integer", default = aes_grpc_attrs.redis_port or 6379},
         redis_timeout = {type = "integer", default = aes_grpc_attrs.redis_timeout or 1000},
         redis_password = {type = "string", default = aes_grpc_attrs.redis_password or "123456"},

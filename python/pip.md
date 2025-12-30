@@ -7,3 +7,8 @@ pip index versions PACKAGE_NAME
 # 添加镜像源
 # --index-url https://repo.huaweicloud.com/repository/pypi/simple
 ```
+
+### pip 导出包版本
+```shell
+pip freeze > requirements.txt
+```

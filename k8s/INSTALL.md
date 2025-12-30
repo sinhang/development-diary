@@ -277,7 +277,6 @@ kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all
 kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all --ignore-not-found
 kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all --ignore-not-found --timeout=5s
 kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all --ignore-not-found --timeout=5s --wait=false
-kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all --ignore-not-found --timeout=5s --wait=false --force-deletion
 kubectl delete pods -l app=nginx -n nginx --force --grace-period=0 --all --ignore-not-found --timeout=5s --wait=false --force-deletion --force-deletion-propagation=Background
 ```
 
