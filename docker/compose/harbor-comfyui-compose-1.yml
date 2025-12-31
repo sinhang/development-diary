@@ -14,13 +14,9 @@ services:
       - "DEVICE=0"
       - "LISTEN=0.0.0.0"
       - "PORT=9010"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    runtime: nvidia
     stdin_open: true
     tty: true
     command: "/bin/sh"

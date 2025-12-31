@@ -46,3 +46,11 @@ Thu Dec  4 10:39:11 2025
 |    0   N/A  N/A          359046      G   /proc/self/exe                           93MiB |
 +-----------------------------------------------------------------------------------------+
 ```
+
+### 指定 python 可见显卡
+```bash
+# 单张
+export CUDA_VISIBLE_DEVICES=0
+# 多张
+export CUDA_VISIBLE_DEVICES=0,1
+```
