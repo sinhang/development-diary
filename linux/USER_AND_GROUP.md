@@ -49,3 +49,8 @@ sudo passwd <username>
 ```bash
 sudo userdel <username>
 ```
+
+### 设置整个目录盘的拥有者
+```bash
+sudo chown -R fengqi:fengqi /mnt/hdd3
+```
