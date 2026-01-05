@@ -22,6 +22,16 @@ systemctl show containerd -p LimitNOFILE
 LimitNOFILE=1048576
 ```
 
+### 设置用户文件描述符数
+```bash
+cat <<EOF | sudo tee /etc/sysctl.d/99-inotify.conf
+fs.inotify.max_user_watches=1048576
+fs.inotify.max_user_instances=8192
+EOF
+
+sudo sysctl --system
+```
+
 ### 创新创建 pod 即可
 ```bash
 # pod 内部验证文件描述符数

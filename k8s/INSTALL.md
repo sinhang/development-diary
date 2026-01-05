@@ -171,6 +171,11 @@ docker save docker.io/calico/kube-controllers:v3.25.0 | sudo ctr -n=k8s.io image
 
 sudo systemctl restart containerd
 
+# 独立部署
+# curl -O https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+# 校验镜像是否一致，校验 CALICO_IPV4POOL_CIDR 是否与 kubeadm init 配置一致, 查询 kubeadm init 配置 ip 段 kubectl -n kube-system get cm kubeadm-config -o yaml | grep podSubnet
+# kubectl apply -f calico.yaml
+
 
 
 # 导出镜像
@@ -224,7 +229,7 @@ EOF
 sudo systemctl restart containerd
 
 ### 如果还不行试试修改配置
-sudo vi sudo vi /etc/containerd/config.toml
+sudo vi /etc/containerd/config.toml
 # 找到下面配置
 [plugins.'io.containerd.cri.v1.images'.registry]
   config_path = '/etc/containerd/certs.d:/etc/docker/certs.d'
@@ -232,10 +237,35 @@ sudo vi sudo vi /etc/containerd/config.toml
 [plugins.'io.containerd.cri.v1.images'.registry]
   config_path = '/etc/containerd/certs.d'
 
+### 且加入 [plugins."io.containerd.grpc.v1.cri".registry] 及 config_path = "/etc/containerd/certs.d" 这俩行
+# [plugins]
+#  [plugins.'io.containerd.cri.v1.images']
+#    snapshotter = 'overlayfs'
+#    disable_snapshot_annotations = true
+#    discard_unpacked_layers = false
+#    max_concurrent_downloads = 3
+#    concurrent_layer_fetch_buffer = 0
+#    image_pull_progress_timeout = '5m0s'
+#    image_pull_with_sync_fs = false
+#    stats_collect_period = 10
+#    use_local_image_pull = false
+#
+#    [plugins.'io.containerd.cri.v1.images'.pinned_images]
+#      sandbox = 'registry.aliyuncs.com/google_containers/pause:3.10'
+#
+#    [plugins.'io.containerd.cri.v1.images'.registry]
+#      config_path = '/etc/containerd/certs.d'
+#
+#    [plugins.'io.containerd.cri.v1.images'.image_decryption]
+#      key_model = 'node'
+#
+#    [plugins."io.containerd.grpc.v1.cri".registry]
+#      config_path = "/etc/containerd/certs.d"
+
 
 ### 下面的配置是旧版本的
 
-sudo vi sudo vi /etc/containerd/config.toml
+sudo vi /etc/containerd/config.toml
 # 找到 
 #[plugins."io.containerd.grpc.v1.cri".image_decryption]
 #  key_model = "node"
@@ -293,4 +323,9 @@ kubectl get pods -A -o wide
 kubectl logs -n loki -l app=loki
 kubectl logs -n loki -l app=loki-promtail
 kubectl logs -n kube-system -l k8s-app=kube-dns
+```
+
+### 生成默认启动文件
+```bash
+kubeadm config print init-defaults > kubeadm-config.yaml
 ```
