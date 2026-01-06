@@ -24,6 +24,12 @@ LimitNOFILE=1048576
 
 ### 设置用户文件描述符数
 ```bash
+sysctl fs.inotify.max_user_watches
+# 输出 fs.inotify.max_user_watches = 8192
+sysctl fs.inotify.max_user_instances
+# 输出 fs.inotify.max_user_instances = 128
+
+# 设置
 cat <<EOF | sudo tee /etc/sysctl.d/99-inotify.conf
 fs.inotify.max_user_watches=1048576
 fs.inotify.max_user_instances=8192
