@@ -163,3 +163,15 @@ python main.py --listen 0.0.0.0 --port 8188 --cuda-device 0 --output-directory /
 ```
 
 [http://127.0.0.1:8188](http://127.0.0.1:8188)
+
+### other
+```bash
+pip install onnxruntime-gpu xformers==0.0.31.post1
+pip install sageattention jxlpy transformers==4.52.1
+python -m spacy download en_core_web_sm
+
+
+git clone https://github.com/facebookresearch/segment-anything-2.git sam2
+cd sam2/
+pip install -e .
+```

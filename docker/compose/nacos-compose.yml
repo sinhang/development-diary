@@ -1,18 +1,20 @@
 services:
   nacos:
-    image: nacos/nacos-server:2.0.3
+    image: nacos/nacos-server:latest
     container_name: nacos
     ports:
       - "8848:8848"
       - "9848:9848"
-      - "9849:9849"
+      - "9849:8080"
     volumes:
       - ./logs:/home/nacos/logs
+      - ./data:/home/nacos/data
+    restart: unless-stopped
     environment:
       - MODE=standalone
       - NACOS_AUTH_ENABLE=true
-      - NACOS_AUTH_IDENTITY_KEY=test
-      - NACOS_AUTH_IDENTITY_VALUE=test
+      - NACOS_AUTH_IDENTITY_KEY=nacos
+      - NACOS_AUTH_IDENTITY_VALUE=nacos
       - NACOS_AUTH_USER_AGENT_AUTH_WHITE_ENABLE=true
       - NACOS_AUTH_TOKEN=SecretKey0945029898563945898453485676578974525
       
@@ -22,13 +24,6 @@ services:
       - JVM_XMN=256m
       - JVM_MS=128m
       - JVM_MMS=256m
-      
-      # 添加额外的JVM参数
-      - JAVA_OPTS=-XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+ExplicitGCInvokesConcurrent -XX:+CMSParallelRemarkEnabled -XX:+UseCMSInitiatingOccupancyOnly
-      
-      # 或者使用单个环境变量（根据Nacos版本选择）
-      - JAVA_OPT_EXT=-Xms2g -Xmx2g -Xmn256m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=256m -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+ExplicitGCInvokesConcurrent -XX:+CMSParallelRemarkEnabled -XX:+UseCMSInitiatingOccupancyOnly
-    restart: unless-stopped
 # sudo docker run --name nacos -itd 
 # -e MODE=standalone 
 # -e NACOS_AUTH_ENABLE=true 

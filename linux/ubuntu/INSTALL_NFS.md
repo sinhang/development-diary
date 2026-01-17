@@ -61,6 +61,13 @@ sudo vi /etc/fstab
 192.168.1.100:/comfyui/input  /mnt/nfs/input  nfs  _netdev,x-systemd.automount,noatime,actimeo=0  0  0
 192.168.1.100:/comfyui/output  /mnt/nfs/output  nfs  _netdev,x-systemd.automount,noatime,actimeo=0  0  0
 
+
+# 重新加载 systemd 配置
+sudo systemctl daemon-reload
+
+# 显示挂载信息
+sudo mount -a
+
 ```
 | 参数                    | 作用                       |
 | --------------------- | ------------------------ |

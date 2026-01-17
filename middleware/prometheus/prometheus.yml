@@ -45,7 +45,7 @@ scrape_configs:
         labels:
           group: 'prometheus-servers'
           datacenter: 'dc1'
-  - job_name: 'nacos'
+  - job_name: 'nacos' # https://nacos.io/zh-cn/docs/v2/guide/admin/monitor-guide.html
 
     # 覆盖全局的 scrape_interval
     scrape_interval: 10s
@@ -88,7 +88,7 @@ scrape_configs:
         target_label: 'instance'
         replacement: '${1}'
 
-  - job_name: 'nacos-discorvery'
+  - job_name: 'nacos-discorvery' # https://github.com/afghanistanyn/prometheus-nacos-sd
     file_sd_configs:
     - files:
       - /etc/prometheus/nacos_sd_dev.json
