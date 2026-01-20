@@ -7,7 +7,10 @@ sudo vi /etc/systemd/system/containerd.service.d/override.conf
 # 写入
 [Service]
 LimitNOFILE=1048576
+```
 
+### 重启 containerd 服务
+```bash
 sudo systemctl daemon-reexec
 sudo systemctl restart containerd
 sudo systemctl restart kubelet
