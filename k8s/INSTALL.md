@@ -7,10 +7,12 @@
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
+sudo chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 sudo mkdir -p /etc/pt/keyrings/
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key | sudo gpg --dearmor -o /etc/pt/keyrings/kubernetes-apt-keyring.gpg
-echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/table:/v1.33/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl
 # 锁定版本
@@ -20,6 +22,11 @@ sudo apt-mark hold kubelet kubeadm kubectl
 kubectl version --client
 # Client Version: v1.33.6
 # Kustomize Version: v5.6.0
+
+# 禁用 swap
+sudo swapoff -a # (不需要重启)  
+# 或者永久禁用 sudo vim /etc/fstab 将 swap 禁用 
+# /swap.img  none  swap  sw  0  0 注释这一行
 ```
 
 ### 创建集群,master及worker都需要生成配置文件及修改配置文件
@@ -39,11 +46,6 @@ sudo systemctl status containerd
 # 测试 CRI 是否可用， 如果输出 json 那么恭喜，CRI 已经可用
 sudo crictl info
 
-# 禁用 swap
-# 执行： sudo swapoff -a (不需要重启)  
-# 或者永久禁用 sudo vim /etc/fstab 将 swap 禁用 
-# /swap.img  none  swap  sw  0  0 注释这一行
-
 # 初始化
 sudo kubeadm init --image-repository=registry.aliyuncs.com/google_containers --pod-network-cidr=10.244.0.0/16
 
@@ -51,24 +53,53 @@ sudo kubeadm init --image-repository=registry.aliyuncs.com/google_containers --p
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-# 安装网络插件（如 Calico）
-sudo ctr -n k8s.io images pull registry.aliyuncs.com/google_containers/pause:3.10
-kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-
-# 添加节点
-# sudo kubeadm init --config kubeadm-config.yaml
-# sudo kubeadm token create --print-join-command
-# sudo kubeadm join 192.168.1.100:6443 --token 9d5b0c.c0c0c0c0c0c0c0c0 --discovery-token-ca-cert-hash sha256:c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
-# sudo kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-# kubectl get pods -n kube-system
-# kubectl get nodes
-# kubectl get pods -n kube-system
-# kubectl get pods -n kube-system | grep metrics-server
-# kubectl get pods -n kube-system | grep metrics-server | grep Running
-# kubectl get pods -n kube-system | grep metrics-server | grep Running | awk '{print}' | xargs kubectl delete pod -n kube-system
 ```
 
+### 配置网络
+```bash
+# 网络插件 calico / master 及 worker 节点 都需要
+docker pull docker.io/calico/cni:v3.25.0
+docker pull docker.io/calico/node:v3.25.0
+docker pull docker.io/calico/kube-controllers:v3.25.0
+
+# 然后转换为 containerd 格式
+docker save docker.io/calico/cni:v3.25.0 | sudo ctr -n=k8s.io images import -
+docker save docker.io/calico/node:v3.25.0 | sudo ctr -n=k8s.io images import -
+docker save docker.io/calico/kube-controllers:v3.25.0 | sudo ctr -n=k8s.io images import -
+
+curl -O https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+kubectl apply -f calico.yaml
+
+# 重启 containerd
+sudo systemctl restart containerd
+```
+
+### 配置私有镜像仓库
+```shell
+# 修改 containerd 配置
+sudo vi /etc/containerd/config.toml
+# 找到下面配置
+[plugins.'io.containerd.cri.v1.images'.registry]
+  config_path = '/etc/containerd/certs.d:/etc/docker/certs.d'
+# 将上面的修改为， 去掉 :/etc/docker/certs.d
+[plugins.'io.containerd.cri.v1.images'.registry]
+  config_path = '/etc/containerd/certs.d'
+
+# 创建证书文件
+sudo mkdir -p /etc/containerd/certs.d/192.168.1.100:5000
+sudo cat <<EOF | sudo tee /etc/containerd/certs.d/192.168.1.100:5000/hosts.toml
+server = "http://192.168.1.100:5000"
+
+[host."http://192.168.1.100:5000"]
+  capabilities = ["pull", "resolve"]
+  skip_verify = true
+EOF
+
+# 重启 containerd
+sudo systemctl restart containerd
+```
+
+# `-------------------------------------------------- 不需要 --------------------------------------------------`
 ### pod错误排查
 ```bash
 # 查看 kube-system 命名空间 pod 状态，所有都在 running 那么恭喜，集群搭建成功
@@ -211,12 +242,12 @@ kubectl describe pod -n kube-system calico-node-2qk7m
 kubectl exec -it ad-service-6479d6c87c-rkmm9 -n fengqi -- /bin/bash
 ```
 
-
 ### 拉取内部镜像失败
 ```bash
 # Failed to pull image "192.168.1.27:8090/dev/config-service:latest": failed to pull and unpack image "192.168.1.27:8090/dev/config-service:latest": failed to resolve reference "192.168.1.27:8090/dev/config-service:latest": failed to do request: Head "https://192.168.1.27:8090/v2/dev/config-service/manifests/latest": http: server gave HTTP response to HTTPS client
 
 # 新版本
+sudo mkdir -p /etc/containerd/certs.d/192.168.1.100:5000
 sudo cat <<EOF | sudo tee /etc/containerd/certs.d/192.168.1.100:5000/hosts.toml
 server = "http://192.168.1.100:5000"
 
