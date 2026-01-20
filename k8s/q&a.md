@@ -15,3 +15,14 @@ Back-off pulling image "192.168.1.100:5000/dev/account-service:latest": ErrImage
 [SECRET](./SECRET.md)
 ```bash
 ```
+
+
+### q
+```
+Unschedulable 0/1 nodes are available: 1 node(s) had untolerated taint {node-role.kubernetes.io/control-plane: }. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+```
+### a
+```bash
+# 删除 taint
+kubectl taint nodes <master-node-name> node-role.kubernetes.io/control-plane-
+```
