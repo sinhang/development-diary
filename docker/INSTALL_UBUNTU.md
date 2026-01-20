@@ -78,3 +78,14 @@ sudo chown "$USER":"$USER" /home/"$USER"/.docker -R
 sudo chmod g+rwx "$HOME/.docker" -R
 sudo chmod 666 /var/run/docker.sock
 ```
+
+### 导出镜像
+```shell
+docker save -o <image>.tar <image>
+docker save -o <image>.tar <image>:<tag>
+```
+
+### 导入镜像
+```shell
+docker load -i <image>.tar
+```

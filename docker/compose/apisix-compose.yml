@@ -35,7 +35,7 @@ services:
       apisix:
 
   etcd:
-    image: kubesphere/etcd:3.6.4-0
+    image: bitnami/etcd:latest
     restart: always
     volumes:
       - etcd_data:/bitnami/etcd

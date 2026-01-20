@@ -14,6 +14,6 @@ services:
       - DB_PASSWORD=LHPeXJZ7JqvLiQTC
     volumes:
       - /etc/localtime:/etc/localtime:ro  # 时间同步
-      - ./kuboard/data:/data  # 可选：持久化数据
+      - ./data:/data  # 可选：持久化数据
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     privileged: true

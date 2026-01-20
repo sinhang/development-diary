@@ -52,3 +52,9 @@ git clone https://github.com/sinhang/analysis-dynamic-synonym.git
 # https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch-grok
 sudo apt install maven -y
 ```
+
+### install
+```bash
+unzip dynamic-synonym-8.7.1.zip -d ./dynamic-synonym
+docker cp ./dynamic-synonym docker-elk-elasticsearch-1:/usr/share/elasticsearch/plugins/
+```

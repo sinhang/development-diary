@@ -43,4 +43,4 @@ services:
       image: jaegertracing/jaeger-cassandra-schema:latest
       depends_on:
         cassandra:
-          condition: service_health
+          condition: service_healthy
