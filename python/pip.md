@@ -27,3 +27,9 @@ pip config set global.trusted-host repo.huaweicloud.com
 pip install --upgrade PACKAGE_NAME
 pip install --upgrade pip
 ```
+
+### 查询包版本
+```shell
+pip list | grep -E "(torch|mmcv|mmpose|numpy)"
+pip show PACKAGE_NAME
+```

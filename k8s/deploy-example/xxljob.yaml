@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xxljob
+  namespace: fengqi-test
+  labels:
+    app: xxljob
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xxljob
+  template:
+    metadata:
+      labels:
+        app: xxljob
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+      - name: xxljob
+        image: xuxueli/xxl-job-admin:3.2.0
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: PARAMS
+          value: |
+            --server.port=8080
+            --spring.datasource.url=jdbc:mysql://192.168.1.100:3308/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+            --spring.datasource.username=root
+            --spring.datasource.password=LHPeXJZ7JqvLiQTC
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xxljob  # 改名为 xxljob 以便于内部访问
+  namespace: fengqi-test
+spec:
+  selector:
+    app: xxljob
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30088
+  type: NodePort
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: xxljob-ingress
+  namespace: fengqi-test
+spec:
+  rules:
+  - host: xxljob.fengqi-test.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: xxljob  # 使用新的服务名称
+            port:
+              number: 8080
