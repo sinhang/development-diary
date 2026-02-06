@@ -3,6 +3,17 @@
 [openpose](https://github.com/CMU-Perceptual-Computing-Lab/openpose)
 [install protobuf](../../linux/ubuntu/soft/protobuf.md)
 
+### install dependencies
+```bash
+sudo apt-get install libopencv-dev libgoogle-glog-dev cmake protobuf-compiler libprotobuf-dev libboost-all-dev libhdf5-dev libopenblas-dev \
+  liblapack-dev \
+  libblas-dev \
+  swig \
+  libatlas3-base \
+  libatlas-base-dev \
+  liblapack3 \
+```
+
 ### install openpose
 ```shell
 git clone https://github.com/CMU-Perceptual-Computing-Lab/openpose.git
@@ -22,14 +33,22 @@ cd models
 ```shell
 ./build/examples/openpose/openpose.bin --video ../examples/media/video.avi --write_json ./output/
 
-./build/examples/openpose/openpose.bin --image_dir /mnt/hdd/develope/3D --write_json ./json_results --face --hand
+./build/examples/openpose/openpose.bin --face --hand --image_dir /mnt/hdd/develope/3D --write_json ./json_results
 
 ./build/examples/openpose/openpose.bin --image_dir /mnt/hdd/develope/3D --write_json ./json_results --display 0 --render_pose 0 --face --hand
+
+./build/examples/openpose/openpose.bin --image_dir /mnt/nvme2/develope/develope/code/py-project/measure/photo --write_json ./resources_json_results --display 0 --face --hand
 ```
 
 ### clean
 ```shell
 rm -rf build/ CMakeFiles/ CMakeCache.txt cmake_install.cmake Makefile
+```
+
+### cpu 版本
+```shell
+cmake ..     -DBUILD_PYTHON=ON     -DPYTHON_EXECUTABLE=$(python -c "import sys; print(sys.executable)")     -DGPU_MODE=CPU_ONLY     -DDOWNLOAD_BODY_25_MODEL=ON     -DBUILD_CAFFE=ON     -DUSE_CUDNN=OFF
+make -j`nproc`
 ```
 
 # OpenPose 命令行参数详解

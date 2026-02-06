@@ -6,7 +6,6 @@
 apt-get update && apt-get install -y \
     python3 \
     libx11-6 \
-    libgl1-mesa-glx \
     libglib2.0-0 \
     libegl1 \
     libegl1-mesa \
@@ -54,7 +53,7 @@ apt-get update && apt-get install -y \
     libatlas3-base \
     libatlas-base-dev \
     liblapack3 \
-    liblapack-dev \
+    liblapack-dev
     
 apt-get update
 
@@ -67,6 +66,8 @@ wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/
 dpkg -i cuda-keyring_1.1-1_all.deb
 apt-get update
 
+# apt search cudnn
+# apt search cuda-12-9 | grep cudnn
 apt-get install -y \
     cudnn9-cuda-11-8 \
     libcudnn9-dev-cuda-11 \
@@ -76,11 +77,11 @@ apt-get install -y \
 cmake .. \
     -DBUILD_PYTHON=ON \
     -DPYTHON_EXECUTABLE=$(python -c "import sys; print(sys.executable)") \
-    -DPYTHON_LIBRARY=$(find /path/to/venv -name "libpython*.so" 2>/dev/null || find /usr -name "libpython*.so" 2>/dev/null | head -1) \
+    -DPYTHON_LIBRARY=$(find /mnt/nvme2/develope/develope/code/py-project/smplify-xmc/.venv/ -name "libpython*.so" 2>/dev/null || find /usr -name "libpython*.so" 2>/dev/null | head -1) \
     -DPYTHON_INCLUDE_DIR=$(python -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
     -DGPU_MODE=CUDA \
     -DCUDA_ARCH=Auto \
-    -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
+    -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-12
 
 make -j$(nproc)
 ```
