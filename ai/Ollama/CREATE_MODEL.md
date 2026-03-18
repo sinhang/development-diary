@@ -117,3 +117,35 @@ Thinking...
 
 >>> /bye
 ```
+
+### tags && push
+```bash
+ollama list
+NAME                                          ID              SIZE     MODIFIED       
+sinhang/qwen3.5:27b-q8_0-Claude-4.6-Opus      5162bbf2cf7b    28 GB    7 seconds ago     
+sinhang/qwen3.5:27b-q5_K_M-Claude-4.6-Opus    d1bd99a1f449    19 GB    24 seconds ago    
+sinhang/qwen3.5:27b-q4_K_M-Claude-4.6-Opus    29d03cc396e2    16 GB    48 seconds ago    
+sinhang/QWen35-27b-q8_0-Claude:latest         5162bbf2cf7b    28 GB    2 hours ago       
+sinhang/QWen35-27b-q4_K_M-Claude:latest       29d03cc396e2    16 GB    3 hours ago       
+sinhang/QWen35-27b-q5_K_M-Claude:latest       d1bd99a1f449    19 GB    3 hours ago       
+qwen3.5:27b-q5_K_M-claude                     39586898e7cc    19 GB    6 hours ago       
+qwen3.5:27b-q4_K_M-claude                     29d03cc396e2    16 GB    7 hours ago       
+qwen3.5:27b                                   7653528ba5cb    17 GB    9 hours ago       
+qwen3.5:35b-a3b-q8_0                          655d273ede3a    38 GB    30 hours ago      
+qwen3-coder:30b-a3b-q8_0                      7b438a19895a    32 GB    30 hours ago      
+qwen3-coder:30b                               06c1097efce0    18 GB    31 hours ago      
+qwen3.5:35b                                   3460ffeede54    23 GB    33 hours ago     
+
+
+ollama cp sinhang/QWen35-27b-q4_K_M-Claude:latest sinhang/qwen3.5:27b-q4_K_M-Claude-4.6-Opus
+ollama push sinhang/qwen3.5:27b-q4_K_M-Claude-4.6-Opus
+
+ollama cp sinhang/QWen35-27b-q5_K_M-Claude:latest sinhang/qwen3.5:27b-q5_K_M-Claude-4.6-Opus
+ollama push sinhang/sinhang/qwen3.5:27b-q5_K_M-Claude-4.6-Opus
+
+ollama cp sinhang/QWen35-27b-q8_0-Claude:latest sinhang/qwen3.5:27b-q8_0-Claude-4.6-Opus
+ollama push sinhang/qwen3.5:27b-q8_0-Claude-4.6-Opus
+
+https://ollama.com/sinhang/qwen3.5
+
+```
