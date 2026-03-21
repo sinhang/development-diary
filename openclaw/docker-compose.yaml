@@ -1,0 +1,25 @@
+# bofore
+# sudo docker run --rm -it --user "$(id -u):$(id -g)" -v "$(pwd)/config:/home/node/.openclaw" openclaw-dev:latest openclaw setup
+# after
+# sudo docker-compose up -d 
+services:
+  openclaw:
+    image: openclaw-dev:latest
+    container_name: openclaw
+    restart: unless-stopped
+    ports:
+      - "18789:18789"
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+      - ./config:/home/node/.openclaw
+    user: "${UID:-1000}:${GID:-1000}"
+    command: ["openclaw", "gateway"]
+    networks:
+      - openclaw_net
+
+networks:
+  openclaw_net:
+    driver: bridge
+
+# sudo docker compose exec openclaw openclaw devices list && sudo docker compose exec openclaw openclaw devices approve --latest
