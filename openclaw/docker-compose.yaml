@@ -9,7 +9,6 @@ services:
     restart: unless-stopped
     ports:
       - "18789:18789"
-      - "8080:8080"
     volumes:
       - ./data:/data
       - ./config:/home/node/.openclaw
