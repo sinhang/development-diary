@@ -22,3 +22,21 @@ networks:
     driver: bridge
 
 # sudo docker compose exec openclaw openclaw devices list && sudo docker compose exec openclaw openclaw devices approve --latest
+# sudo docker exec -it openclaw npx -y @larksuite/openclaw-lark install
+# sudo usermod -aG docker mercury
+
+
+# Commands:
+#  docker compose -f /home/luo/soft/docker/openclaw/docker-compose.yml logs -f openclaw-gateway
+#  docker compose -f /home/luo/soft/docker/openclaw/docker-compose.yml exec openclaw-gateway node dist/index.js health --token "ef3667800017ac8bde4ecd45428670e64c3fb5fdbddf1f9d460f7390e4c5eef2"
+#  docker compose -f /home/luo/soft/docker/openclaw/docker-compose.yml logs -f openclaw-cli 
+
+#  export OPENCLAW_CONFIG_DIR=/home/luo/soft/docker/openclaw-config/
+
+# Commands:
+#  docker compose -f /home/luo/soft/docker/openclaw/docker-compose.yml logs -f openclaw-gateway
+#  docker compose -f /home/luo/soft/docker/openclaw/docker-compose.yml exec openclaw-gateway node dist/index.js health --token "ef3667800017ac8bde4ecd45428670e64c3fb5fdbddf1f9d460f7390e4c5eef2"
+
+# docker compose -f /home/luo/soft/docker/openclaw/docker-compose.yml 
+# docker compose exec openclaw-gateway openclaw devices list && docker compose exec openclaw-gateway openclaw devices approve --latest
+# docker compose -f /home/luo/soft/docker/openclaw/docker-compose.yml exec openclaw-gateway openclaw gateway restart

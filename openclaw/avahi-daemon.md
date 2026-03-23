@@ -20,11 +20,17 @@ sudo tee /etc/avahi/services/openclaw-setup.service << 'EOF'
     <port>8080</port>
     <txt-record>path=/</txt-record>
   </service>
+  <service>
+    <type>_http._tcp</type>
+    <port>443</port>
+  </service>
 </service-group>
 EOF
+
+sudo systemctl restart avahi-daemon
+
 
 sudo systemctl enable avahi-daemon
 sudo systemctl start avahi-daemon
 
-sudo systemctl restart avahi-daemon
 ```
