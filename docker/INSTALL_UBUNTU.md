@@ -89,3 +89,9 @@ docker save -o <image>.tar <image>:<tag>
 ```shell
 docker load -i <image>.tar
 ```
+
+### 权限
+```shell
+sudo usermod -aG docker $USER
+newgrp docker
+```
