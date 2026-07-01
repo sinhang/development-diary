@@ -4,7 +4,7 @@
 ```bash
 env | grep -i proxy
 # or
-printenv | grep -i proxy
+继续
 ```
 
 ### 临时设置或修改代理
