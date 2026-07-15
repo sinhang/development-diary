@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  qwen3.5-9b:
+    image: lmsysorg/sglang:latest
+    container_name: qwen3.5-9b-router
+    ports:
+      - "30001:30000"
+    volumes:
+      - /mnt/hdd3/llm/Qwen:/Qwen:ro
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=2
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    runtime: nvidia
+    restart: unless-stopped
+    ipc: host
+    shm_size: 16g
+    ulimits:
+      memlock: -1
+      stack: 67108864
+
+    entrypoint: python3 -m sglang.launch_server
+    command: >
+      --model-path /Qwen/Qwen3.5-9b
+      --served-model-name Qwen3.5-9B
+      --host 0.0.0.0
+      --port 30000
+      --tp-size 1
+      --mem-fraction-static 0.70
+      --context-length 32768
+      --max-total-tokens 65536
+      --reasoning-parser qwen3
+      --trust-remote-code
+      --max-running-requests 64
+      --chunked-prefill-size 4096
+      --kv-cache-dtype fp8_e4m3
+      --speculative-algo NEXTN
+      --speculative-num-steps 5
+      --speculative-num-draft-tokens 6
+      --speculative-eagle-topk 1
+
+
+# 19GB

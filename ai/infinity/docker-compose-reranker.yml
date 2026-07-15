@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  reranker:
+    image: michaelf34/infinity:latest
+    container_name: qwen-reranker-infinity
+    ports:
+      - "30003:7997"
+    volumes:
+      - /mnt/hdd3/llm/Qwen:/Qwen:ro
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=2
+    runtime: nvidia
+    restart: unless-stopped
+    command: >
+      v2
+      --model-id /Qwen/Qwen3-Reranker-4B
+      --served-model-name Qwen3-Reranker-4B
+      --port 7997
+      --batch-size 32
+      --device cuda
+
+# 8GB

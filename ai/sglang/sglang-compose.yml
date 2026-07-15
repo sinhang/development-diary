@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  sglang:
+    image: lmsysorg/sglang:latest
+    container_name: sglang
+    ports:
+      - "30000:30000"
+    volumes:
+      - /mnt/hdd3/llm/Qwen:/Qwen
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=1,2
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    runtime: nvidia
+    restart: unless-stopped
+    entrypoint: python3 -m sglang.launch_server
+    command: >
+      --model-path /Qwen/Qwen3.6-35B-A3B
+      --served-model-name Qwen/Qwen3.6-35B-A3B
+      --host 0.0.0.0
+      --port 30000
+      --tp-size 2
+      --mem-fraction-static 0.85
+      --context-length 262144
+      --tool-call-parser qwen3_coder
+      --reasoning-parser qwen3
+      --speculative-algo NEXTN
+      --speculative-num-steps 3
+      --speculative-eagle-topk 1
+      --speculative-num-draft-tokens 4
+      --trust-remote-code
+      --max-running-requests 16
+      --chunked-prefill-size 4096
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    ipc: host
+    shm_size: 32g
