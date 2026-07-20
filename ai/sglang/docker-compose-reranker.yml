@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  reranker:
+    image: lmsysorg/sglang:latest
+    container_name: qwen-reranker
+    ports:
+      - "30003:30000"
+    volumes:
+      - /mnt/hdd3/llm/Qwen:/Qwen:ro
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=2
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    runtime: nvidia
+    restart: unless-stopped
+    ipc: host
+    shm_size: 16g
+    ulimits:
+      memlock: -1
+      stack: 67108864
+
+    entrypoint: python3 -m sglang.launch_server
+    command: >
+      --model-path /Qwen/Qwen3-Reranker-4B
+      --served-model-name Qwen3-Reranker-4B
+      --host 0.0.0.0
+      --port 30000
+      --trust-remote-code
+      --disable-radix-cache
+      --chat-template examples/chat_template/qwen3_reranker.jinja
+
+# 8GB
