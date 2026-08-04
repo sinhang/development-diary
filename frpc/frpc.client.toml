@@ -1,0 +1,96 @@
+serverAddr = "0.0.0.0"
+serverPort = 7000
+auth.token = "token strings"
+
+[[proxies]]
+name = "projectweb"
+type = "http"
+localPort = 30050
+localIP = "192.168.1.28"
+customDomains = ["projectweb.example.com"]
+
+[[proxies]]
+name = "projectwebHttps"
+type = "https"
+customDomains = ["projectweb.example.com"]
+localIP = "192.168.1.28"
+localPort = 30050
+
+
+[proxies.plugin]
+type = "https2http"
+localAddr = "192.168.1.28:30050"
+
+# HTTPS 证书相关的配置
+crtPath = "/home/mercury/soft/frp/ssl/projectweb.example.com.pem"
+keyPath = "/home/mercury/soft/frp/ssl/projectweb.example.com.key"
+hostHeaderRewrite = "192.168.1.28"
+requestHeaders.set.x-from-where = "frp"
+
+
+[[proxies]]
+name = "projectapi"
+type = "http"
+localPort = 8090
+localIP = "192.168.1.28"
+customDomains = ["projectapi.example.com"]
+
+[[proxies]]
+name = "projectapiHttps"
+type = "https"
+customDomains = ["projectapi.example.com"]
+
+[proxies.plugin]
+type = "https2http"
+localAddr = "192.168.1.28:8090"
+
+# HTTPS 证书相关的配置
+crtPath = "/home/mercury/soft/frp/ssl/projectapi.example.com.pem"
+keyPath = "/home/mercury/soft/frp/ssl/projectapi.example.com.key"
+hostHeaderRewrite = "192.168.1.28"
+requestHeaders.set.x-from-where = "frp"
+
+[[proxies]]
+name = "projectadmin"
+type = "http"
+localPort = 50088
+localIP = "192.168.1.28"
+customDomains = ["projectadmin.example.com"]
+
+[[proxies]]
+name = "projectadminHttps"
+type = "https"
+customDomains = ["projectadmin.example.com"]
+
+[proxies.plugin]
+type = "https2http"
+localAddr = "192.168.1.28:50088"
+
+# HTTPS 证书相关的配置
+crtPath = "/home/mercury/soft/frp/ssl/projectadmin.example.com.pem"
+keyPath = "/home/mercury/soft/frp/ssl/projectadmin.example.com.key"
+hostHeaderRewrite = "192.168.1.28"
+requestHeaders.set.x-from-where = "frp"
+
+
+[[proxies]]
+name = "registry"
+type = "http"
+localPort = 5000
+localIP = "127.0.0.1"    # Harbor 在本机就用 127.0.0.1
+customDomains = ["registry.example.com"]
+
+[[proxies]]
+name = "harborHttps"
+type = "https"
+customDomains = ["registry.example.com"]
+
+[proxies.plugin]
+type = "https2http"
+localAddr = "127.0.0.1:5000"    # 转发到 Harbor 的 HTTP 5000
+
+# HTTPS 证书配置
+crtPath = "/home/mercury/soft/frp/ssl/registry.example.com.pem"
+keyPath = "/home/mercury/soft/frp/ssl/registry.example.com.key"
+hostHeaderRewrite = "registry.example.com"
+requestHeaders.set.x-from-where = "frp"

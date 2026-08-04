@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  vllm-vl:
+    image:  vllm/vllm-openai:v0.26.0
+    container_name: qwen3-vl-32b
+    ports:
+      - "30005:8000"                    # 注意端口改为 30005，避免与 sglang 冲突
+    volumes:
+      - /mnt/hdd3/llm/Qwen:/Qwen:ro
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=2
+    runtime: nvidia
+    restart: unless-stopped
+    shm_size: 16g
+    command: >
+      --model /Qwen/Qwen3-VL-32B-Instruct-FP8
+      --served-model-name Qwen3-VL-32B-Instruct-FP8
+      --host 0.0.0.0
+      --port 8000
+      --dtype auto
+      --gpu-memory-utilization 0.90
+      --max-model-len 16384
+      --max-num-seqs 4
+      --kv-cache-dtype fp8
+      --tensor-parallel-size 1
+      --limit-mm-per-prompt '{"image": 5}'
+      --media-io-kwargs '{"video": {"num_frames": -1}}'
+      --async-scheduling
+      --mm-encoder-tp-mode data
